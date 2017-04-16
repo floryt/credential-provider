@@ -1,4 +1,5 @@
 #include "HTTPSclient.h"
+#include "jsonParser.h"
 #include <atlbase.h>
 #include <atlconv.h>
 #include <string>
@@ -137,24 +138,14 @@ char* HTTPclient::POST(char* json, bool& isError)
 const char* HTTPclient::createJson(LPCWSTR username, bool is_guest)
 {
 	//"{\"username\":\"Steven\",\"computerUID\":\"123456789\",\"guest\":false}";
-	std::string json = "";
-	json += "{\"username\":"; //{\"username\:"
 
-	json += "\"";
-	json += CT2A(username);
-	json += "\",\"computerUID\":\"";
+	std::unordered_map<std::string, std::string> map_json;
+	map_json.insert(std::pair<std::string, std::string>("\"username\"","\"" + std::string(CT2A(username)) + "\""));
+	map_json.insert(std::pair<std::string, std::string>("\"computerUID\"", "\""+std::to_string(123456789)+ "\"")); //TODO: add identifier
+	map_json.insert(std::pair<std::string, std::string>("\"guest\"", is_guest ? "true" : "false"));
 
-	json += std::to_string(123456789); //TODO: add identifier
+	return jsonParser::CreateJson(map_json).c_str();
 
-	json += "\",\"guest\":";
-
-	json += is_guest ? "true" : "false";
-
-	json += "}";
-
-	_log->Write("HTTPclient::createJson", json);
-
-	return json.c_str();
 
 }
 
@@ -166,36 +157,33 @@ bool HTTPclient::parseJSON(char* json, std::string* message)
 	std::string json_s(json);
 	std::string from_admin = "";
 
+	std::map<std::string, std::string> map_json= jsonParser::ParseJson(json);
 
-	if (json_s.length() >= 14) //so there won't be exception
+	std::map<std::string, std::string>::iterator it;
+	it = map_json.find("\"access\""); //TODO: config here
+	if (it != map_json.end())
 	{
-		if (strcmp((json_s.substr(0, 14)).c_str(), "{\"access\":true") == 0)
+		if (it->second.compare("true") == 0)
 		{
+			from_admin += "Approved. Admin says: ";
 			to_return = true;
 		}
+		else
+		{
+			from_admin += "Access denied. Admin says: ";
+		}
 	}
-	int i = 0;
-	if (!to_return)
-	{
-		from_admin += "access denied: ";
-		i = 27;
-	}
-	else
-	{
-		from_admin += "enter password, ";
-		i = 26;
-	}
-	
 
-	for (; i < json_s.length() && json_s[i] != '\"'; i++)
+	it = map_json.find("\"message\""); //TODO: config here
+	if (it != map_json.end())
 	{
-		from_admin += json_s[i];
+		from_admin += it->second;
 	}
+
 
 	*message = from_admin;
 
 
-	//*message = json_s;
 	return to_return;
 
 }

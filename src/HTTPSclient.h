@@ -6,6 +6,7 @@
 #include <WinInet.h>
 #include <cstdlib>
 #include "Logger.h"
+#include <map>
 
 #pragma comment(lib,"ws2_32.lib")
 
@@ -21,5 +22,4 @@ public:
 
 private:
 	Logger* _log;
-
 };
