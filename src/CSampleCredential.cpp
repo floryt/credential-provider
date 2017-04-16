@@ -9,7 +9,6 @@
 //
 
 #ifndef WIN32_NO_STATUS
-#include "ClientNetwork.h"
 #include "FirebaseCommunication.h"
 #include "Logger.h"
 #include <thread> 
@@ -87,11 +86,11 @@ HRESULT CSampleCredential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
 	// Initialize the String value of all the fields.
 	if (SUCCEEDED(hr))
 	{
-		hr = SHStrDupW(L"Sample Credential", &_rgFieldStrings[SFI_LABEL]);
+		hr = SHStrDupW(L"Floryt", &_rgFieldStrings[SFI_LABEL]);
 	}
 	if (SUCCEEDED(hr))
 	{
-		hr = SHStrDupW(L"Bar's and Steven's Credential Provider", &_rgFieldStrings[SFI_LARGE_TEXT]);
+		hr = SHStrDupW(L"Floryt", &_rgFieldStrings[SFI_LARGE_TEXT]);
 	}
 	if (SUCCEEDED(hr))
 	{
