@@ -15,6 +15,7 @@
 #pragma warning(disable: 28251)
 #include <credentialprovider.h>
 #include <ntsecapi.h>
+#include <string>
 #pragma warning(pop)
 
 #define SECURITY_WIN32
@@ -99,3 +100,5 @@ HRESULT DomainUsernameStringAlloc(
     );
 
 HRESULT SplitDomainAndUsername(_In_ PCWSTR pszQualifiedUserName, _Outptr_result_nullonfailure_ PWSTR *ppszDomain, _Outptr_result_nullonfailure_ PWSTR *ppszUsername);
+
+LPCWSTR strTOlpcwstr(std::string str);

@@ -10,7 +10,7 @@ HTTPclient::HTTPclient(Logger* log)
 }
 
 //if returned nullpter - error
-char* HTTPclient::GET(bool& isError)
+char* HTTPclient::GET(bool& isError, char* firebase_function)
 {
 	isError = false;
 	HINTERNET hIntSession = InternetOpen(_T("MyApp"), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
@@ -20,12 +20,17 @@ char* HTTPclient::GET(bool& isError)
 	InternetSetOption(hIntSession, INTERNET_OPTION_RECEIVE_TIMEOUT, &rec_timeout, sizeof(rec_timeout));
 	//-------------------------
 
-	HINTERNET hHttpSession = InternetConnect(hIntSession, _T("us-central1-fir-communication-bce3d.cloudfunctions.net"), INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0);
+	HINTERNET hHttpSession = InternetConnect(hIntSession, _T("us-central1-floryt-88029.cloudfunctions.net"), INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0);
+
+	//CASTING: char* to LPWSTR
+	wchar_t wtext[50];
+	mbstowcs(wtext, firebase_function, strlen(firebase_function) + 1);//Plus null
+	LPCWSTR function = wtext;
 
 	HINTERNET hHttpRequest = HttpOpenRequest(
 		hHttpSession,
 		_T("GET"),
-		_T("/DllCommunication"),
+		function,
 		HTTP_VERSION, 0, 0, INTERNET_FLAG_SECURE, 0);
 
 
@@ -72,7 +77,8 @@ char* HTTPclient::GET(bool& isError)
 	return szBuffer;
 }
 
-char* HTTPclient::POST(char* json, bool& isError)
+//firebase_function example: "/DllCommunication"
+char* HTTPclient::POST(char* json, bool& isError, char* firebase_function)
 {
 	isError = false;
 
@@ -83,12 +89,17 @@ char* HTTPclient::POST(char* json, bool& isError)
 	InternetSetOption(hIntSession, INTERNET_OPTION_RECEIVE_TIMEOUT, &rec_timeout, sizeof(rec_timeout));
 	//-------------------------
 
-	HINTERNET hHttpSession = InternetConnect(hIntSession, _T("us-central1-fir-communication-bce3d.cloudfunctions.net"), INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0);
+	HINTERNET hHttpSession = InternetConnect(hIntSession, _T("us-central1-floryt-88029.cloudfunctions.net"), INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0);
+
+	//CASTING: char* to LPWSTR
+	wchar_t wtext[50];
+	mbstowcs(wtext, firebase_function, strlen(firebase_function) + 1);//Plus null
+	LPCWSTR function = wtext;
 
 	HINTERNET hHttpRequest = HttpOpenRequest(
 		hHttpSession,
 		_T("POST"),
-		_T("/DllCommunication"),
+		function,
 		HTTP_VERSION, 0, 0, INTERNET_FLAG_SECURE, 0);
 
 
@@ -135,14 +146,14 @@ char* HTTPclient::POST(char* json, bool& isError)
 	return szBuffer;
 }
 
-const char* HTTPclient::createJson(LPCWSTR username, bool is_guest)
+const char* HTTPclient::createJson(LPCWSTR user_email)
 {
 	//"{\"username\":\"Steven\",\"computerUID\":\"123456789\",\"guest\":false}";
 
 	std::unordered_map<std::string, std::string> map_json;
-	map_json.insert(std::pair<std::string, std::string>("\"username\"","\"" + std::string(CT2A(username)) + "\""));
+	map_json.insert(std::pair<std::string, std::string>("\"email\"","\"" + std::string(CT2A(user_email)) + "\""));  //CASTING: lpswtsr to string
 	map_json.insert(std::pair<std::string, std::string>("\"computerUID\"", "\""+std::to_string(123456789)+ "\"")); //TODO: add identifier
-	map_json.insert(std::pair<std::string, std::string>("\"guest\"", is_guest ? "true" : "false"));
+	//map_json.insert(std::pair<std::string, std::string>("\"isGuest\"", is_guest ? "true" : "false"));
 
 	return jsonParser::CreateJson(map_json).c_str();
 
@@ -153,6 +164,7 @@ bool HTTPclient::parseJSON(char* json, std::string* message)
 {
 	bool to_return = false;
 
+
 	//{"access":true,"message":"Custom massage from admin"};
 	std::string json_s(json);
 	std::string from_admin = "";
@@ -160,17 +172,12 @@ bool HTTPclient::parseJSON(char* json, std::string* message)
 	std::map<std::string, std::string> map_json= jsonParser::ParseJson(json);
 
 	std::map<std::string, std::string>::iterator it;
-	it = map_json.find("\"access\""); //TODO: config here
+	it = map_json.find("\"access\""); //TODO: config here the file
 	if (it != map_json.end())
 	{
 		if (it->second.compare("true") == 0)
 		{
-			from_admin += "Approved. Admin says: ";
 			to_return = true;
-		}
-		else
-		{
-			from_admin += "Access denied. Admin says: ";
 		}
 	}
 

@@ -9,7 +9,7 @@
 //
 
 #ifndef WIN32_NO_STATUS
-#include "FirebaseCommunication.h"
+
 #include "Logger.h"
 #include <thread> 
 #include <ntstatus.h>
@@ -23,6 +23,9 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <windows.h>
+#include "Logger.h"
+#include <atlbase.h>
+#include <atlconv.h>
 //#include <afxdisp.h>
 
 
@@ -486,70 +489,116 @@ void CSampleCredential::change_label_text(LPCWSTR text)
 	_pCredProvCredentialEvents->EndFieldUpdates();
 }
 
+bool CSampleCredential::post_step(POST_STEP step, FirebaseCommunication* server) //true - continue steps. false - stop.
+{
+	bool to_return = false;
+	EXIT_TYPE exit = default;
+
+
+	LPCWSTR* recived_message = new LPCWSTR();
+	exit = server->AuthenticationPost(_rgFieldStrings[SFI_EDIT_TEXT], recived_message, step);
+
+	if (exit == access_denied)
+	{
+		//change_label_text(_rgFieldStrings[SFI_EDIT_TEXT]);
+		change_label_text(*recived_message);
+		display_dynamic(SFI_HIDECONTROLS_LINK);
+		display_dynamic(SFI_EDIT_TEXT);
+
+	}
+	else if (exit == authentication_succeeded)
+	{
+		//---------OK to move to next step-------
+		to_return = true;
+
+		if (step == obtain_admin_permission) //because step1 does'nt need to change anything yet (it will be changed in the next step
+		{
+			change_label_text(*recived_message); //final step - need to change.
+		}
+		
+	}
+	else if (exit == bad_request)
+	{
+		change_label_text(L"someting went wrong. try again");
+		display_dynamic(SFI_HIDECONTROLS_LINK);
+		display_dynamic(SFI_EDIT_TEXT);
+
+
+	}
+	else if (exit == time_out)
+	{
+		change_label_text(L"the request timed out");
+		display_dynamic(SFI_HIDECONTROLS_LINK);
+		display_dynamic(SFI_EDIT_TEXT);
+
+	}
+	return to_return;
+}
+
 
 bool CSampleCredential::connection_to_server()
 {
 	//-----------------------------------------------------------------------
 	
-	bool to_return = false;
+	Logger* log = new Logger("C:\\Users\\User\\Desktop\\log.txt"); //TODO- path from registry
+	log->Write("connection_to_server", "--------------------------------------------------");
 
-	FirebaseCommunication* server = new FirebaseCommunication("C:\\Users\\User\\Desktop\\log.txt");
+	_config = new ConfigParser("C:\\Users\\User\\Desktop\\config.txt", log);
+	_config->Parse();
+
+	bool to_return = false;
+	bool hr = false;
+
+	FirebaseCommunication* server = new FirebaseCommunication(log);
 
 	hide_dynamic(SFI_HIDECONTROLS_LINK);
 	hide_dynamic(SFI_EDIT_TEXT);
-	hide_dynamic(SFI_CHECKBOX);
+	display_dynamic(SFI_LOGONSTATUS_TEXT);
+	
 
 	EXIT_TYPE exit = default;
-	change_label_text(L"trying to connect..");
-	exit = server->TryToConnect();
 
+	//***********getting text from config*********
+	std::string text = _config->GetVal("tryingToConnect");
+	std::wstring stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
+	LPCWSTR result = stemp.c_str();
+	//********************************************
+
+	change_label_text(result);
+
+
+
+	exit = server->TryToConnect();
 
 	if (exit == cant_connect_to_server)
 	{
 		display_dynamic(SFI_LOGONSTATUS_TEXT);
-		change_label_text(L"connection failed");
+		change_label_text(L"Big boss is'nt responding");
 		display_dynamic(SFI_HIDECONTROLS_LINK);
 		display_dynamic(SFI_EDIT_TEXT);
-		display_dynamic(SFI_CHECKBOX);
+		
 	}
 	else if (exit == connection_to_server_succeeded)
 	{
-		display_dynamic(SFI_LOGONSTATUS_TEXT);
-		change_label_text(L"waiting for approval...");
 
-		LPCWSTR* recived_message = new LPCWSTR();
-		exit = server->TryToAuthenticate(_rgFieldStrings[SFI_EDIT_TEXT], _fChecked==1?true:false, recived_message);
+		//***********getting text from config*********
+		std::string text = _config->GetVal("requestUserToTypeYes");
+		std::wstring stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
+		LPCWSTR result = stemp.c_str();
+		//********************************************
 
-		if (exit == access_denied)
-		{
-			//change_label_text(_rgFieldStrings[SFI_EDIT_TEXT]);
-			change_label_text(*recived_message);
-			display_dynamic(SFI_HIDECONTROLS_LINK);
-			display_dynamic(SFI_EDIT_TEXT);
-			display_dynamic(SFI_CHECKBOX);
-		}
-		else if (exit == authentication_succeeded)
-		{
-			to_return = true;
-			change_label_text(*recived_message);
-			//hide_dynamic(SFI_LOGONSTATUS_TEXT);
-		}
-		else if (exit == bad_request)
-		{
-			to_return = false;
-			change_label_text(L"someting went wrong. try again");
-			display_dynamic(SFI_HIDECONTROLS_LINK);
-			display_dynamic(SFI_EDIT_TEXT);
-			display_dynamic(SFI_CHECKBOX);
+		change_label_text(result);
 
-		}
-		else if (exit == time_out)
+		hr = post_step(obtain_user_identity, server);
+		if(hr)
 		{
-			to_return = false;
-			change_label_text(L"the request timed out");
-			display_dynamic(SFI_HIDECONTROLS_LINK);
-			display_dynamic(SFI_EDIT_TEXT);
-			display_dynamic(SFI_CHECKBOX);
+			change_label_text(L"Requesting permmission from your admins...");
+			hr = post_step(obtain_admin_permission, server);
+			if(hr)
+			{
+				//---------process succeeded-------
+				to_return = true;
+			}
 		}
 	}
 
@@ -559,48 +608,7 @@ bool CSampleCredential::connection_to_server()
 
 }
 
-////connected the sevice's server and gets a messgae (should be true or false).
-////--written by BAR
-//bool CSampleCredential::connection_to_server()
-//{
-//	//BAR: you can enter the service connection here.
-//	std::ofstream outfile("C:\\Users\\User\\Desktop\\test.txt"); //BAR: opening a log
-//	outfile << "my text here!\n";
-//	bool connected =	false;
-//	ClientNetwork* c = nullptr;
-//
-//	//--------------------------------
-//	try
-//	{
-//		c = new ClientNetwork(); //STEVEN: connection to 10.0.0.4:8989
-//		outfile << "Connected!\n";
-//		connected = true;
-//	}
-//	catch (std::exception e)
-//	{
-//		outfile << e.what();
-//		outfile << "Failed!\n";
-//	}
-//	char buffer[1024] = "hi";
-//	while (std::strcmp(buffer,"hi") ==0)//buffer == "hi")
-//	{
-//		//outfile << "trying to recive\n";
-//		if (c->receivePackets(buffer) == 1)
-//		{
-//			outfile << "Failed to read data\n";
-//		}
-//	}
-//	
-//	outfile << buffer;
-//	outfile << "\n";
-//	outfile << "Done!\n";
-//	outfile.close();
-//	//------------------------------
-//
-//	connected = c->getPremmission();
-//
-//	return connected;
-//}
+
 
 // Called when the user clicks a command link.
 HRESULT CSampleCredential::CommandLinkClicked(DWORD dwFieldID)
@@ -634,14 +642,6 @@ HRESULT CSampleCredential::CommandLinkClicked(DWORD dwFieldID)
 				//show other fileds
 				_pCredProvCredentialEvents->BeginFieldUpdates();
 				cpfsShow = CPFS_DISPLAY_IN_SELECTED_TILE; //status SHOW
-				//_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_FULLNAME_TEXT, cpfsShow);
-				//_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_DISPLAYNAME_TEXT, cpfsShow);
-				//_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_LOGONSTATUS_TEXT, cpfsShow);
-				//_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_CHECKBOX, cpfsShow);
-				//_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_EDIT_TEXT, cpfsShow);
-				//_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_COMBOBOX, cpfsShow);
-
-				//_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_LAUNCHWINDOW_LINK, cpfsShow);
 				
 				_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_PASSWORD, cpfsShow);
 				_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_SUBMIT_BUTTON, cpfsShow);

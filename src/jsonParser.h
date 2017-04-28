@@ -4,6 +4,7 @@
 #include <map>
 #include <unordered_map>
 
+//create json from map and create map from json
 namespace jsonParser
 {
 	std::map<std::string, std::string> ParseJson(char* json_c);

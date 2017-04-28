@@ -707,3 +707,11 @@ HRESULT SplitDomainAndUsername(_In_ PCWSTR pszQualifiedUserName, _Outptr_result_
     }
     return hr;
 }
+
+
+LPCWSTR strTOlpcwstr(std::string str)
+{
+	std::wstring stemp = std::wstring(str.begin(), str.end());
+	return stemp.c_str(); //to LPCWSTR
+}
+

@@ -53,7 +53,7 @@ struct FIELD_STATE_PAIR
 // The Field interactive state indicates when
 static const FIELD_STATE_PAIR s_rgFieldStatePairs[] =
 {
-	{ CPFS_DISPLAY_IN_BOTH,            CPFIS_NONE    },    // SFI_TILEIMAGE
+	{ CPFS_DISPLAY_IN_BOTH,            CPFIS_NONE    },    // SFI_TILEIMAGE 
 	{ CPFS_HIDDEN,                     CPFIS_NONE    },    // SFI_LABEL
 	{ CPFS_DISPLAY_IN_BOTH,            CPFIS_NONE    },    // SFI_LARGE_TEXT
 	{ CPFS_HIDDEN,   CPFIS_NONE },    // SFI_PASSWORD
@@ -63,8 +63,8 @@ static const FIELD_STATE_PAIR s_rgFieldStatePairs[] =
 	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_FULLNAME_TEXT
 	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_DISPLAYNAME_TEXT
 	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_LOGONSTATUS_TEXT
-	{ CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },    // SFI_CHECKBOX
-	{ CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },    // SFI_EDIT_TEXT
+	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_CHECKBOX
+	{ CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_FOCUSED },    // SFI_EDIT_TEXT
 	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_COMBOBOX
 };
 
@@ -78,16 +78,16 @@ static const CREDENTIAL_PROVIDER_FIELD_DESCRIPTOR s_rgCredProvFieldDescriptors[]
 {
 	{ SFI_TILEIMAGE,         CPFT_TILE_IMAGE,    L"Image",                      CPFG_CREDENTIAL_PROVIDER_LOGO  },
 	{ SFI_LABEL,             CPFT_SMALL_TEXT,    L"Tooltip",                    CPFG_CREDENTIAL_PROVIDER_LABEL },
-	{ SFI_LARGE_TEXT,        CPFT_LARGE_TEXT,    L"Steven Credential Provider"                                 }, //STEVEN: edit here did not effected the dll
-	{ SFI_PASSWORD,          CPFT_PASSWORD_TEXT, L"Enter password here"                                                    }, //STEVEN: edit here did take effect!!
+	{ SFI_LARGE_TEXT,        CPFT_LARGE_TEXT,    L"Floryt Credential Provider"                                 }, //STEVEN: edit here did not effected the dll
+	{ SFI_PASSWORD,          CPFT_PASSWORD_TEXT, L"Enter password here"                                        }, //STEVEN: edit here did take effect!!
 	{ SFI_SUBMIT_BUTTON,     CPFT_SUBMIT_BUTTON, L"Submit"                                                     },
 	{ SFI_LAUNCHWINDOW_LINK, CPFT_COMMAND_LINK,  L"Launch helper window"                                       },
 	{ SFI_HIDECONTROLS_LINK, CPFT_COMMAND_LINK,  L"Hide additional controls"                                   },
 	{ SFI_FULLNAME_TEXT,     CPFT_SMALL_TEXT,    L"Full name: "                                                },
 	{ SFI_DISPLAYNAME_TEXT,  CPFT_SMALL_TEXT,    L"Display name: "                                             },
 	{ SFI_LOGONSTATUS_TEXT,  CPFT_SMALL_TEXT,    L"Logon status: "                                             },
-	{ SFI_CHECKBOX,          CPFT_CHECKBOX,      L"Connect as guest"                                                   },
-	{ SFI_EDIT_TEXT,         CPFT_EDIT_TEXT,     L"Enter Username"                                                  },
+	{ SFI_CHECKBOX,          CPFT_CHECKBOX,      L"Connect as guest"                                           },
+	{ SFI_EDIT_TEXT,         CPFT_EDIT_TEXT,     L"Enter your email"                                           },
 	{ SFI_COMBOBOX,          CPFT_COMBOBOX,      L"Combobox"                                                   },
 };
 

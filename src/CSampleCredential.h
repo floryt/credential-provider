@@ -22,6 +22,8 @@
 #include "common.h"
 #include "dll.h"
 #include "resource.h"
+#include "ConfigParser.h"
+#include "FirebaseCommunication.h"
 
 class CSampleCredential : public ICredentialProviderCredential2, ICredentialProviderCredentialWithFieldOptions
 {
@@ -98,6 +100,7 @@ public:
 	void change_label_text(LPCWSTR text);
 	void display_dynamic(SAMPLE_FIELD_ID field_id);
 	void hide_dynamic(SAMPLE_FIELD_ID field_id);
+	bool post_step(POST_STEP stepp, FirebaseCommunication* server); //true - continue steps. false - stop.
 
   public:
     HRESULT Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
@@ -122,4 +125,6 @@ public:
     DWORD                                   _dwComboIndex;                                  // Tracks the current index of our combobox.
     bool                                    _fShowControls;                                 // Tracks the state of our show/hide controls link.
     bool                                    _fIsLocalUser;                                  // If the cred prov is assosiating with a local user tile
+
+	ConfigParser*							_config;										// An object to handle with the config file.
 };

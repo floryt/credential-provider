@@ -20,12 +20,18 @@ enum EXIT_TYPE
 
 };
 
+enum POST_STEP
+{
+	obtain_user_identity,
+	obtain_admin_permission
+};
+
 class FirebaseCommunication
 {
 public:
-	FirebaseCommunication(std::string path);
+	FirebaseCommunication(Logger* log);
 	EXIT_TYPE TryToConnect();
-	EXIT_TYPE TryToAuthenticate(LPCWSTR username, bool is_guest, LPCWSTR* recived_message);
+	EXIT_TYPE AuthenticationPost(LPCWSTR username, LPCWSTR* recived_message, POST_STEP step);
 	~FirebaseCommunication();
 	Logger* GetLog();
 	void ThreadWait(std::string req_type, char* data, std::string &packet_buffer, bool& is_Error); //POST/GET, json, a poiner to buffer
