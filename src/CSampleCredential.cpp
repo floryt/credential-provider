@@ -519,7 +519,13 @@ bool CSampleCredential::post_step(POST_STEP step, FirebaseCommunication* server)
 	}
 	else if (exit == bad_request)
 	{
-		change_label_text(L"someting went wrong. try again");
+		//***********getting text from config*********
+		std::string text = _config->GetVal("badRequest");
+		std::wstring stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
+		LPCWSTR result = stemp.c_str();
+		//********************************************
+		change_label_text(result);
+
 		display_dynamic(SFI_HIDECONTROLS_LINK);
 		display_dynamic(SFI_EDIT_TEXT);
 
@@ -549,7 +555,7 @@ bool CSampleCredential::connection_to_server()
 	bool to_return = false;
 	bool hr = false;
 
-	FirebaseCommunication* server = new FirebaseCommunication(log);
+	FirebaseCommunication* server = new FirebaseCommunication(log, _config);
 
 	hide_dynamic(SFI_HIDECONTROLS_LINK);
 	hide_dynamic(SFI_EDIT_TEXT);
@@ -573,7 +579,14 @@ bool CSampleCredential::connection_to_server()
 	if (exit == cant_connect_to_server)
 	{
 		display_dynamic(SFI_LOGONSTATUS_TEXT);
-		change_label_text(L"Big boss is'nt responding");
+
+		//***********getting text from config*********
+		std::string text = _config->GetVal("connectionToServerFailed");
+		std::wstring stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
+		LPCWSTR result = stemp.c_str();
+		//********************************************
+		change_label_text(result);
+
 		display_dynamic(SFI_HIDECONTROLS_LINK);
 		display_dynamic(SFI_EDIT_TEXT);
 		
@@ -592,7 +605,13 @@ bool CSampleCredential::connection_to_server()
 		hr = post_step(obtain_user_identity, server);
 		if(hr)
 		{
-			change_label_text(L"Requesting permmission from your admins...");
+			//***********getting text from config*********
+			std::string text = _config->GetVal("requestAdminPermission");
+			std::wstring stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
+			LPCWSTR result = stemp.c_str();
+			//********************************************
+			change_label_text(result);
+
 			hr = post_step(obtain_admin_permission, server);
 			if(hr)
 			{
@@ -603,6 +622,8 @@ bool CSampleCredential::connection_to_server()
 	}
 
 	delete server;
+
+	delete _config;
 
 	return to_return;
 
@@ -624,18 +645,6 @@ HRESULT CSampleCredential::CommandLinkClicked(DWORD dwFieldID)
 		HWND hwndOwner = nullptr;
 		switch (dwFieldID)
 		{
-		case SFI_LAUNCHWINDOW_LINK:
-			if (_pCredProvCredentialEvents)
-			{
-				_pCredProvCredentialEvents->OnCreatingWindow(&hwndOwner);
-			}
-
-			// Pop a messagebox indicating the click.
-			//::MessageBox(hwndOwner, connected ? L"Connected" : L"Not connected", L"Status", MB_HELP);
-			MessageBox(hwndOwner, L"hello", L"Status", MB_HELP); //TODO: change message
-			break;
-
-
 		case SFI_HIDECONTROLS_LINK:
 			if (connection_to_server()) //if the connection has succeeded and the user has been authenticated
 			{
@@ -675,6 +684,8 @@ HRESULT CSampleCredential::GetSerialization(_Out_ CREDENTIAL_PROVIDER_GET_SERIAL
 	_Outptr_result_maybenull_ PWSTR *ppwszOptionalStatusText,
 	_Out_ CREDENTIAL_PROVIDER_STATUS_ICON *pcpsiOptionalStatusIcon)
 {
+
+
 	//BAR: we get a pointer to an object from winlogon who calls the foo. we then arrange the username and passwords as requested (hashing the passwords),
 	//	   and requesting the LSA to load an authentication package. this "package" (actually a dll) will determine if to log the user into the system.
 	HRESULT hr = E_UNEXPECTED;

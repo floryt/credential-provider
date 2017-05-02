@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Logger.h"
 #include "HTTPSclient.h"
+#include "ConfigParser.h"
 
 enum EXIT_TYPE
 {
@@ -29,9 +30,11 @@ enum POST_STEP
 class FirebaseCommunication
 {
 public:
-	FirebaseCommunication(Logger* log);
+	FirebaseCommunication(Logger* log, ConfigParser* config);
 	EXIT_TYPE TryToConnect();
 	EXIT_TYPE AuthenticationPost(LPCWSTR username, LPCWSTR* recived_message, POST_STEP step);
+	EXIT_TYPE AuthenticationPostMock(LPCWSTR username, LPCWSTR* recived_message, POST_STEP step);
+	EXIT_TYPE TryToConnectMock();
 	~FirebaseCommunication();
 	Logger* GetLog();
 	void ThreadWait(std::string req_type, char* data, std::string &packet_buffer, bool& is_Error); //POST/GET, json, a poiner to buffer
@@ -41,6 +44,7 @@ private:
 	Logger* _log;
 	bool cv;
 	HTTPclient* http;
+	ConfigParser* _config;
 
 
 };

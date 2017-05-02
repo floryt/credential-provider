@@ -4,23 +4,48 @@
 #include <atlconv.h>
 #include <string>
 
-HTTPclient::HTTPclient(Logger* log)
+HTTPclient::HTTPclient(Logger* log, ConfigParser* config)
 {
 	_log = log;
+	_config = config;
 }
 
 //if returned nullpter - error
 char* HTTPclient::GET(bool& isError, char* firebase_function)
 {
+	//------config variebles---
+	std::string text;
+	std::wstring stemp;
+	LPCWSTR config_result;
+	//-------------------------
+
 	isError = false;
-	HINTERNET hIntSession = InternetOpen(_T("MyApp"), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+
+	//***********getting text from config*********
+	text = _config->GetVal("tryingToConnect");
+	stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
+	config_result = stemp.c_str();
+	//********************************************
+
+	HINTERNET hIntSession = InternetOpen(config_result, INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
 
 	//---------timeout:
-	DWORD rec_timeout = 1000 * 3;					// TODO: change time.
+
+	//***********getting text from config*********
+	text = _config->GetVal("getTimeOut");
+	//********************************************
+
+	DWORD rec_timeout = 1000 * stoi(text);					
 	InternetSetOption(hIntSession, INTERNET_OPTION_RECEIVE_TIMEOUT, &rec_timeout, sizeof(rec_timeout));
 	//-------------------------
 
-	HINTERNET hHttpSession = InternetConnect(hIntSession, _T("us-central1-floryt-88029.cloudfunctions.net"), INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0);
+	//***********getting text from config*********
+	text = _config->GetVal("firebasePath");
+	stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
+	config_result = stemp.c_str();
+	//********************************************
+
+	HINTERNET hHttpSession = InternetConnect(hIntSession, config_result, INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0);
 
 	//CASTING: char* to LPWSTR
 	wchar_t wtext[50];
@@ -35,7 +60,7 @@ char* HTTPclient::GET(bool& isError, char* firebase_function)
 
 
 	//---for get:
-	TCHAR* szHeaders = _T("Content-Type: text/html\nMySpecialHeder: whatever");
+	TCHAR* szHeaders = _T("Content-Type: text/html\nMySpecialHeder: credentialProvider");
 	CHAR szReq[1024] = "";
 
 	CHAR szBuffer[1025];
@@ -80,16 +105,41 @@ char* HTTPclient::GET(bool& isError, char* firebase_function)
 //firebase_function example: "/DllCommunication"
 char* HTTPclient::POST(char* json, bool& isError, char* firebase_function)
 {
-	isError = false;
-
-	HINTERNET hIntSession = InternetOpen(_T("MyApp"), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
-
-	//---------timeout:
-	DWORD rec_timeout = 1000 * 10; // TODO: change time.
-	InternetSetOption(hIntSession, INTERNET_OPTION_RECEIVE_TIMEOUT, &rec_timeout, sizeof(rec_timeout));
+	//------config variebles---
+	std::string text;
+	std::wstring stemp;
+	LPCWSTR config_result;
 	//-------------------------
 
-	HINTERNET hHttpSession = InternetConnect(hIntSession, _T("us-central1-floryt-88029.cloudfunctions.net"), INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0);
+	isError = false;
+
+
+	//***********getting text from config*********
+	text = _config->GetVal("tryingToConnect");
+	stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
+	config_result = stemp.c_str();
+	//********************************************
+
+	HINTERNET hIntSession = InternetOpen(config_result, INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+
+	//---------timeout:
+
+	//***********getting text from config*********
+	text = _config->GetVal("postTimeOut");
+	//********************************************
+	DWORD rec_timeout = 1000 * stoi(text);
+	InternetSetOption(hIntSession, INTERNET_OPTION_RECEIVE_TIMEOUT, &rec_timeout, sizeof(rec_timeout));
+
+	//-------------------------
+
+
+	//***********getting text from config*********
+	text = _config->GetVal("firebasePath");
+	stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
+	config_result = stemp.c_str();
+	//********************************************
+
+	HINTERNET hHttpSession = InternetConnect(hIntSession, config_result, INTERNET_DEFAULT_HTTPS_PORT, _T(""), _T(""), INTERNET_SERVICE_HTTP, 0, 0);
 
 	//CASTING: char* to LPWSTR
 	wchar_t wtext[50];
@@ -150,9 +200,13 @@ const char* HTTPclient::createJson(LPCWSTR user_email)
 {
 	//"{\"username\":\"Steven\",\"computerUID\":\"123456789\",\"guest\":false}";
 
+	//TODO - make json modular.
 	std::unordered_map<std::string, std::string> map_json;
 	map_json.insert(std::pair<std::string, std::string>("\"email\"","\"" + std::string(CT2A(user_email)) + "\""));  //CASTING: lpswtsr to string
-	map_json.insert(std::pair<std::string, std::string>("\"computerUID\"", "\""+std::to_string(123456789)+ "\"")); //TODO: add identifier
+	std::string uid= "\"";
+	uid += "jtgvisl0im9ieqo2o599g8bnsd";
+	uid += "\"";
+	map_json.insert(std::pair<std::string, std::string>("\"computerUID\"",uid)); //TODO: add identifier
 	//map_json.insert(std::pair<std::string, std::string>("\"isGuest\"", is_guest ? "true" : "false"));
 
 	return jsonParser::CreateJson(map_json).c_str();
@@ -162,6 +216,8 @@ const char* HTTPclient::createJson(LPCWSTR user_email)
 
 bool HTTPclient::parseJSON(char* json, std::string* message)
 {
+
+
 	bool to_return = false;
 
 
@@ -172,7 +228,8 @@ bool HTTPclient::parseJSON(char* json, std::string* message)
 	std::map<std::string, std::string> map_json= jsonParser::ParseJson(json);
 
 	std::map<std::string, std::string>::iterator it;
-	it = map_json.find("\"access\""); //TODO: config here the file
+
+	it = map_json.find("access"); //TODO: config here the file
 	if (it != map_json.end())
 	{
 		if (it->second.compare("true") == 0)
@@ -181,7 +238,7 @@ bool HTTPclient::parseJSON(char* json, std::string* message)
 		}
 	}
 
-	it = map_json.find("\"message\""); //TODO: config here
+	it = map_json.find("message"); //TODO: config here
 	if (it != map_json.end())
 	{
 		from_admin += it->second;

@@ -7,13 +7,14 @@
 #include <cstdlib>
 #include "Logger.h"
 #include <map>
+#include "ConfigParser.h"
 
 #pragma comment(lib,"ws2_32.lib")
 
 class HTTPclient
 {
 public:
-	HTTPclient(Logger* log);
+	HTTPclient(Logger* log, ConfigParser* config);
 	
 	char* GET(bool& isError, char* firebase_function);
 	char* POST(char* json, bool& isError, char* firebase_function);
@@ -22,4 +23,5 @@ public:
 
 private:
 	Logger* _log;
+	ConfigParser* _config;
 };

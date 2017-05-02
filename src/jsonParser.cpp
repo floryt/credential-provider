@@ -43,11 +43,11 @@ namespace jsonParser
 			temp = "";
 			for (int i = 0; i < vec[j].length(); i++)
 			{
-				if (vec[j][i] != sep)
+				if (vec[j][i] != sep && vec[j][i] != '\"') //TODO: check " better
 				{
 					temp += vec[j][i];
 				}
-				else
+				else if (vec[j][i] == sep)
 				{
 					temp_vec.push_back(temp);
 					temp = "";

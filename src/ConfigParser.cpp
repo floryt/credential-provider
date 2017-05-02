@@ -64,7 +64,7 @@ void ConfigParser::Parse()
 
 std::string ConfigParser::GetVal(std::string key)
 {
-	std::string to_return = "none";
+	std::string to_return = "---";
 	if (_file.is_open())
 	{
 		map_config::iterator it;
