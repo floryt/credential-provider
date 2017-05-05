@@ -276,7 +276,7 @@ void FirebaseCommunication::ThreadWait(std::string req_type, char* data, std::st
 		std::string str(ans);
 		packet_buffer = ans;
 	}
-	else if (req_type == "/obtainIdentityVerification" || req_type == "/obtainAdminPermission" || req_type == "/BarIsKaky") //TODO: get from config
+	else if (req_type == "/obtainIdentityVerification" || req_type == "/obtainAdminPermission") //TODO: get from config
 	{
 		std::vector<char> cstr(req_type.c_str(), req_type.c_str() + req_type.size() + 1);
 		ans = http->POST(data, isError, _strdup(req_type.c_str()));

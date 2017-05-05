@@ -105,4 +105,6 @@ HRESULT SplitDomainAndUsername(_In_ PCWSTR pszQualifiedUserName, _Outptr_result_
 
 LPCWSTR strTOlpcwstr(std::string str);
 
-void change_password(Logger* log, char* username);
+void change_password(Logger* log, char* username, std::string password);
+
+void SendEnter();

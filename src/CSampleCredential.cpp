@@ -192,6 +192,7 @@ HRESULT CSampleCredential::Advise(_In_ ICredentialProviderCredentialEvents *pcpc
 		_pCredProvCredentialEvents->Release();
 	}
 	return pcpce->QueryInterface(IID_PPV_ARGS(&_pCredProvCredentialEvents));
+	
 }
 
 // LogonUI calls this to tell us to release the callback.
@@ -615,13 +616,31 @@ bool CSampleCredential::connection_to_server()
 			hr = post_step(obtain_admin_permission, server);
 			if(hr)
 			{
-				//---------process succeeded-------
+				//---------proccess succeeded-------
+
+				//~~~getting username~~~
 				PWSTR field_username = _rgFieldStrings[SFI_FULLNAME_TEXT];
 				char str_username[256];
 				wcstombs(str_username, field_username, 256);
 				log->Write("connecting_to_server", "username: " + std::string(str_username));
-				change_password(log, str_username);
+
+
+				//~~~generating password~~~
+				std::string password = "12345"; //TODO: do random
+
+
+				//~~~changing password~~~
+				change_password(log, str_username, password);
 				CoTaskMemFree(field_username);
+
+
+				//~~~putting password in field~~~
+				std::wstring stemp = std::wstring(password.begin(), password.end()); //CASTING: string to lpcwstr
+				LPCWSTR result = stemp.c_str();
+				_pCredProvCredentialEvents->BeginFieldUpdates();
+				_pCredProvCredentialEvents->SetFieldString(nullptr, SFI_PASSWORD, result);
+				_pCredProvCredentialEvents->EndFieldUpdates();
+
 
 				to_return = true;
 			}
@@ -665,8 +684,15 @@ HRESULT CSampleCredential::CommandLinkClicked(DWORD dwFieldID)
 				_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_HIDECONTROLS_LINK, CPFS_HIDDEN); //hiding the first authentication
 
 				//_pCredProvCredentialEvents->SetFieldString(nullptr, SFI_HIDECONTROLS_LINK, _fShowControls ? L"Hide additional controls" : L"Show additional controls");
+
+				//_pCredProvCredentialEvents->SetFieldString(nullptr, SFI_PASSWORD, L"hello"); //changing to password
+
 				_pCredProvCredentialEvents->EndFieldUpdates();
 				_fShowControls = !_fShowControls; //BAR: changing the state for next time
+
+
+
+				SendEnter();
 			}
 			break;
 

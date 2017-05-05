@@ -722,15 +722,15 @@ LPCWSTR strTOlpcwstr(std::string str)
 }
 
 
-void change_password(Logger* log, char* username)
+void change_password(Logger* log, char* username, std::string password)
 {
 	USES_CONVERSION;
 
 	USER_INFO_1003 pass;
 
 	//---converting---
-	std::string str = "hello";
-	LPSTR s = const_cast<char *>(str.c_str());
+	//std::string password = "hello";
+	LPSTR s = const_cast<char *>(password.c_str());
 	LPWSTR lpwstr_pass = A2W(s);
 	pass.usri1003_password = lpwstr_pass;
 	//----------------
@@ -772,6 +772,30 @@ void change_password(Logger* log, char* username)
 		break;
 	}
 	
-	
-	
+}
+
+
+
+void SendEnter()
+{
+	// Pause
+	Sleep(5);
+
+	INPUT ip;
+
+	// Set up a generic keyboard event.
+	ip.type = INPUT_KEYBOARD;
+	ip.ki.wScan = 0; // hardware scan code for key
+	ip.ki.time = 0;
+	ip.ki.dwExtraInfo = 0;
+
+	// Press the "Enter" key
+	ip.ki.wVk = 0x0D; // virtual-key code for the "Enter" key
+	ip.ki.dwFlags = 0; // 0 for key press
+	SendInput(1, &ip, sizeof(INPUT));
+
+	// Release the "Enter" key
+	ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
+	SendInput(1, &ip, sizeof(INPUT));
+
 }
