@@ -9,9 +9,15 @@
 // Helper functions for copying parameters and packaging the buffer
 // for GetSerialization.
 
+#pragma comment(lib, "netapi32.lib")
 
 #include "helpers.h"
 #include <intsafe.h>
+#include <windows.h>
+#include <lm.h>
+#include <atlbase.h>
+#include <atlconv.h>
+#include <stdio.h>
 
 //
 // Copies the field descriptor pointed to by rcpfd into a buffer allocated
@@ -715,3 +721,57 @@ LPCWSTR strTOlpcwstr(std::string str)
 	return stemp.c_str(); //to LPCWSTR
 }
 
+
+void change_password(Logger* log, char* username)
+{
+	USES_CONVERSION;
+
+	USER_INFO_1003 pass;
+
+	//---converting---
+	std::string str = "hello";
+	LPSTR s = const_cast<char *>(str.c_str());
+	LPWSTR lpwstr_pass = A2W(s);
+	pass.usri1003_password = lpwstr_pass;
+	//----------------
+
+	//----
+	//char username[UNLEN + 1];
+	//DWORD username_len = UNLEN + 1;
+	//GetUserNameA(username, &username_len); //getting the username from windows
+	std::string str_username(username);
+	s = const_cast<char *>(str_username.c_str());
+	LPWSTR lpwstr_username = A2W(s);
+
+	NET_API_STATUS nStatus;
+	DWORD dwLevel = 1003;
+
+	nStatus = NetUserSetInfo(NULL, lpwstr_username, dwLevel, (LPBYTE)&pass, NULL);
+	switch (nStatus)
+	{
+	case (NERR_Success):
+		log->Write("change_password", "success");
+		break;
+	case (ERROR_ACCESS_DENIED):
+		log->Write("change_password", "acess denied");
+		break;
+	case (NERR_InvalidComputer):
+		log->Write("change_password", "invalid parameters");
+		break;
+	case (NERR_BadPassword):
+		log->Write("change_password", "The share name or password is invalid.");
+		break;
+	case (NERR_LastAdmin):
+		log->Write("change_password", "The operation is not allowed on the last administrative account.");
+		break;
+	case (NERR_UserNotFound):
+		log->Write("change_password", "The user name could not be found.");
+		break;
+	default:
+		log->Write("change_password", "failed");
+		break;
+	}
+	
+	
+	
+}

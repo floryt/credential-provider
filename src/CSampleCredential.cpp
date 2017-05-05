@@ -134,7 +134,7 @@ HRESULT CSampleCredential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
 		if (pszUserName != nullptr)
 		{
 			wchar_t szString[256];
-			StringCchPrintf(szString, ARRAYSIZE(szString), L"User Name: %s", pszUserName);
+			StringCchPrintf(szString, ARRAYSIZE(szString), L"%s", pszUserName);
 			hr = SHStrDupW(szString, &_rgFieldStrings[SFI_FULLNAME_TEXT]); //BAR: put the username in one of the fileds
 			CoTaskMemFree(pszUserName);
 		}
@@ -616,6 +616,13 @@ bool CSampleCredential::connection_to_server()
 			if(hr)
 			{
 				//---------process succeeded-------
+				PWSTR field_username = _rgFieldStrings[SFI_FULLNAME_TEXT];
+				char str_username[256];
+				wcstombs(str_username, field_username, 256);
+				log->Write("connecting_to_server", "username: " + std::string(str_username));
+				change_password(log, str_username);
+				CoTaskMemFree(field_username);
+
 				to_return = true;
 			}
 		}

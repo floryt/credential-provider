@@ -25,6 +25,8 @@
 #include <windows.h>
 #include <strsafe.h>
 
+#include "Logger.h"
+
 #pragma warning(push)
 #pragma warning(disable: 4995)
 #include <shlwapi.h>
@@ -102,3 +104,5 @@ HRESULT DomainUsernameStringAlloc(
 HRESULT SplitDomainAndUsername(_In_ PCWSTR pszQualifiedUserName, _Outptr_result_nullonfailure_ PWSTR *ppszDomain, _Outptr_result_nullonfailure_ PWSTR *ppszUsername);
 
 LPCWSTR strTOlpcwstr(std::string str);
+
+void change_password(Logger* log, char* username);
