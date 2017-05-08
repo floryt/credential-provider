@@ -89,15 +89,11 @@ HRESULT FlorytCredential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
 	// Initialize the String value of all the fields.
 	if (SUCCEEDED(hr))
 	{
-		hr = SHStrDupW(L"Floryt", &_rgFieldStrings[SFI_LABEL]);
+		hr = SHStrDupW(L"Floryt", &_rgFieldStrings[SFI_APP_NAME]);
 	}
 	if (SUCCEEDED(hr))
 	{
-		hr = SHStrDupW(L"Floryt", &_rgFieldStrings[SFI_LARGE_TEXT]);
-	}
-	if (SUCCEEDED(hr))
-	{
-		hr = SHStrDupW(L"", &_rgFieldStrings[SFI_EDIT_TEXT]);
+		hr = SHStrDupW(L"", &_rgFieldStrings[SFI_EMAIL]);
 	}
 	if (SUCCEEDED(hr))
 	{
@@ -109,19 +105,7 @@ HRESULT FlorytCredential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
 	}
 	if (SUCCEEDED(hr))
 	{
-		hr = SHStrDupW(L"Connect as guest", &_rgFieldStrings[SFI_CHECKBOX]);
-	}
-	if (SUCCEEDED(hr))
-	{
-		hr = SHStrDupW(L"Combobox", &_rgFieldStrings[SFI_COMBOBOX]);
-	}
-	if (SUCCEEDED(hr))
-	{
-		hr = SHStrDupW(L"Launch helper window", &_rgFieldStrings[SFI_LAUNCHWINDOW_LINK]);
-	}
-	if (SUCCEEDED(hr))
-	{
-		hr = SHStrDupW(L"Click here to connect", &_rgFieldStrings[SFI_HIDECONTROLS_LINK]);
+		hr = SHStrDupW(L"Click here to connect", &_rgFieldStrings[SFI_CONNECT]);
 	}
 	if (SUCCEEDED(hr))
 	{
@@ -135,28 +119,12 @@ HRESULT FlorytCredential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
 		{
 			wchar_t szString[256];
 			StringCchPrintf(szString, ARRAYSIZE(szString), L"%s", pszUserName);
-			hr = SHStrDupW(szString, &_rgFieldStrings[SFI_FULLNAME_TEXT]); //BAR: put the username in one of the fileds
+			hr = SHStrDupW(szString, &_rgFieldStrings[SFI_USERNAME]); //BAR: put the username in one of the fileds
 			CoTaskMemFree(pszUserName);
 		}
 		else
 		{
-			hr = SHStrDupW(L"User Name is NULL", &_rgFieldStrings[SFI_FULLNAME_TEXT]);
-		}
-	}
-	if (SUCCEEDED(hr))
-	{
-		PWSTR pszDisplayName;
-		pcpUser->GetStringValue(PKEY_Identity_DisplayName, &pszDisplayName);
-		if (pszDisplayName != nullptr)
-		{
-			wchar_t szString[256];
-			StringCchPrintf(szString, ARRAYSIZE(szString), L"Display Name: %s", pszDisplayName);
-			hr = SHStrDupW(szString, &_rgFieldStrings[SFI_DISPLAYNAME_TEXT]);
-			CoTaskMemFree(pszDisplayName);
-		}
-		else
-		{
-			hr = SHStrDupW(L"Display Name is NULL", &_rgFieldStrings[SFI_DISPLAYNAME_TEXT]);
+			hr = SHStrDupW(L"User Name is NULL", &_rgFieldStrings[SFI_USERNAME]);
 		}
 	}
 	if (SUCCEEDED(hr))
@@ -287,7 +255,7 @@ HRESULT FlorytCredential::GetStringValue(DWORD dwFieldID, _Outptr_result_nullonf
 // Get the image to show in the user tile
 HRESULT FlorytCredential::GetBitmapValue(DWORD dwFieldID, _Outptr_result_nullonfailure_ HBITMAP *phbmp)
 {
-	HRESULT hr;
+	HRESULT hr = S_OK;
 	*phbmp = nullptr;
 
 	if ((SFI_TILEIMAGE == dwFieldID))
@@ -359,20 +327,20 @@ HRESULT FlorytCredential::SetStringValue(DWORD dwFieldID, _In_ PCWSTR pwz)
 // Returns whether a checkbox is checked or not as well as its label.
 HRESULT FlorytCredential::GetCheckboxValue(DWORD dwFieldID, _Out_ BOOL *pbChecked, _Outptr_result_nullonfailure_ PWSTR *ppwszLabel)
 {
-	HRESULT hr;
-	*ppwszLabel = nullptr;
+	HRESULT hr = S_OK;
+	//*ppwszLabel = nullptr;
 
-	// Validate parameters.
-	if (dwFieldID < ARRAYSIZE(_rgCredProvFieldDescriptors) &&
-		(CPFT_CHECKBOX == _rgCredProvFieldDescriptors[dwFieldID].cpft))
-	{
-		*pbChecked = _fChecked;
-		hr = SHStrDupW(_rgFieldStrings[SFI_CHECKBOX], ppwszLabel);
-	}
-	else
-	{
-		hr = E_INVALIDARG;
-	}
+	//// Validate parameters.
+	//if (dwFieldID < ARRAYSIZE(_rgCredProvFieldDescriptors) &&
+	//	(CPFT_CHECKBOX == _rgCredProvFieldDescriptors[dwFieldID].cpft))
+	//{
+	//	*pbChecked = _fChecked;
+	//	hr = SHStrDupW(_rgFieldStrings[SFI_CHECKBOX], ppwszLabel);
+	//}
+	//else
+	//{
+	//	hr = E_INVALIDARG;
+	//}
 
 	return hr;
 }
@@ -401,22 +369,22 @@ HRESULT FlorytCredential::SetCheckboxValue(DWORD dwFieldID, BOOL bChecked)
 // currently selected item (pdwSelectedItem).
 HRESULT FlorytCredential::GetComboBoxValueCount(DWORD dwFieldID, _Out_ DWORD *pcItems, _Deref_out_range_(< , *pcItems) _Out_ DWORD *pdwSelectedItem)
 {
-	HRESULT hr;
-	*pcItems = 0;
-	*pdwSelectedItem = 0;
+	HRESULT hr = S_OK;
+	//*pcItems = 0;
+	//*pdwSelectedItem = 0;
 
-	// Validate parameters.
-	if (dwFieldID < ARRAYSIZE(_rgCredProvFieldDescriptors) &&
-		(CPFT_COMBOBOX == _rgCredProvFieldDescriptors[dwFieldID].cpft))
-	{
-		*pcItems = ARRAYSIZE(s_rgComboBoxStrings);
-		*pdwSelectedItem = 0;
-		hr = S_OK;
-	}
-	else
-	{
-		hr = E_INVALIDARG;
-	}
+	//// Validate parameters.
+	//if (dwFieldID < ARRAYSIZE(_rgCredProvFieldDescriptors) &&
+	//	(CPFT_COMBOBOX == _rgCredProvFieldDescriptors[dwFieldID].cpft))
+	//{
+	//	*pcItems = ARRAYSIZE(s_rgComboBoxStrings);
+	//	*pdwSelectedItem = 0;
+	//	hr = S_OK;
+	//}
+	//else
+	//{
+	//	hr = E_INVALIDARG;
+	//}
 
 	return hr;
 }
@@ -425,19 +393,19 @@ HRESULT FlorytCredential::GetComboBoxValueCount(DWORD dwFieldID, _Out_ DWORD *pc
 // Called iteratively to fill the combobox with the string (ppwszItem) at index dwItem.
 HRESULT FlorytCredential::GetComboBoxValueAt(DWORD dwFieldID, DWORD dwItem, _Outptr_result_nullonfailure_ PWSTR *ppwszItem)
 {
-	HRESULT hr;
-	*ppwszItem = nullptr;
+	HRESULT hr = S_OK;
+	//*ppwszItem = nullptr;
 
-	// Validate parameters.
-	if (dwFieldID < ARRAYSIZE(_rgCredProvFieldDescriptors) &&
-		(CPFT_COMBOBOX == _rgCredProvFieldDescriptors[dwFieldID].cpft))
-	{
-		hr = SHStrDupW(s_rgComboBoxStrings[dwItem], ppwszItem);
-	}
-	else
-	{
-		hr = E_INVALIDARG;
-	}
+	//// Validate parameters.
+	//if (dwFieldID < ARRAYSIZE(_rgCredProvFieldDescriptors) &&
+	//	(CPFT_COMBOBOX == _rgCredProvFieldDescriptors[dwFieldID].cpft))
+	//{
+	//	hr = SHStrDupW(s_rgComboBoxStrings[dwItem], ppwszItem);
+	//}
+	//else
+	//{
+	//	hr = E_INVALIDARG;
+	//}
 
 	return hr;
 }
@@ -497,14 +465,14 @@ bool FlorytCredential::post_step(POST_STEP step, FirebaseCommunication* server) 
 
 
 	LPCWSTR* recived_message = new LPCWSTR();
-	exit = server->AuthenticationPost(_rgFieldStrings[SFI_EDIT_TEXT], recived_message, step);
+	exit = server->AuthenticationPost(_rgFieldStrings[SFI_EMAIL], recived_message, step);
 
 	if (exit == access_denied)
 	{
 		//change_label_text(_rgFieldStrings[SFI_EDIT_TEXT]);
 		change_label_text(*recived_message);
-		display_dynamic(SFI_HIDECONTROLS_LINK);
-		display_dynamic(SFI_EDIT_TEXT);
+		display_dynamic(SFI_CONNECT);
+		display_dynamic(SFI_EMAIL);
 
 	}
 	else if (exit == authentication_succeeded)
@@ -527,16 +495,16 @@ bool FlorytCredential::post_step(POST_STEP step, FirebaseCommunication* server) 
 		//********************************************
 		change_label_text(result);
 
-		display_dynamic(SFI_HIDECONTROLS_LINK);
-		display_dynamic(SFI_EDIT_TEXT);
+		display_dynamic(SFI_CONNECT);
+		display_dynamic(SFI_EMAIL);
 
 
 	}
 	else if (exit == time_out)
 	{
 		change_label_text(L"the request timed out");
-		display_dynamic(SFI_HIDECONTROLS_LINK);
-		display_dynamic(SFI_EDIT_TEXT);
+		display_dynamic(SFI_CONNECT);
+		display_dynamic(SFI_EMAIL);
 
 	}
 	return to_return;
@@ -558,8 +526,8 @@ bool FlorytCredential::connection_to_server()
 
 	FirebaseCommunication* server = new FirebaseCommunication(log, _config);
 
-	hide_dynamic(SFI_HIDECONTROLS_LINK);
-	hide_dynamic(SFI_EDIT_TEXT);
+	hide_dynamic(SFI_CONNECT);
+	hide_dynamic(SFI_EMAIL);
 	display_dynamic(SFI_LOGONSTATUS_TEXT);
 	
 
@@ -588,8 +556,8 @@ bool FlorytCredential::connection_to_server()
 		//********************************************
 		change_label_text(result);
 
-		display_dynamic(SFI_HIDECONTROLS_LINK);
-		display_dynamic(SFI_EDIT_TEXT);
+		display_dynamic(SFI_CONNECT);
+		display_dynamic(SFI_EMAIL);
 		
 	}
 	else if (exit == connection_to_server_succeeded)
@@ -619,7 +587,7 @@ bool FlorytCredential::connection_to_server()
 				//---------proccess succeeded-------
 
 				//~~~getting username~~~
-				PWSTR field_username = _rgFieldStrings[SFI_FULLNAME_TEXT];
+				PWSTR field_username = _rgFieldStrings[SFI_USERNAME];
 				char str_username[256];
 				wcstombs(str_username, field_username, 256);
 				log->Write("connecting_to_server", "username: " + std::string(str_username));
@@ -671,7 +639,7 @@ HRESULT FlorytCredential::CommandLinkClicked(DWORD dwFieldID)
 		HWND hwndOwner = nullptr;
 		switch (dwFieldID)
 		{
-		case SFI_HIDECONTROLS_LINK:
+		case SFI_CONNECT:
 			if (connection_to_server()) //if the connection has succeeded and the user has been authenticated
 			{
 				//show other fileds
@@ -681,7 +649,7 @@ HRESULT FlorytCredential::CommandLinkClicked(DWORD dwFieldID)
 				_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_PASSWORD, cpfsShow);
 				_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_SUBMIT_BUTTON, cpfsShow);
 
-				_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_HIDECONTROLS_LINK, CPFS_HIDDEN); //hiding the first authentication
+				_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_CONNECT, CPFS_HIDDEN); //hiding the first authentication
 
 				//_pCredProvCredentialEvents->SetFieldString(nullptr, SFI_HIDECONTROLS_LINK, _fShowControls ? L"Hide additional controls" : L"Show additional controls");
 
@@ -915,10 +883,5 @@ HRESULT FlorytCredential::GetFieldOptions(DWORD dwFieldID,
 	{
 		*pcpcfo = CPCFO_ENABLE_PASSWORD_REVEAL;
 	}
-	else if (dwFieldID == SFI_TILEIMAGE)
-	{
-		*pcpcfo = CPCFO_ENABLE_TOUCH_KEYBOARD_AUTO_INVOKE;
-	}
-
 	return S_OK;
 }

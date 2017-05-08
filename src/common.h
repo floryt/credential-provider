@@ -19,20 +19,15 @@
 // using each of the nine available field types here.
 enum SAMPLE_FIELD_ID
 {
-	SFI_TILEIMAGE = 0,
-	SFI_LABEL = 1,
-	SFI_LARGE_TEXT = 2,
-	SFI_PASSWORD = 3,
-	SFI_SUBMIT_BUTTON = 4,
-	SFI_LAUNCHWINDOW_LINK = 5,
-	SFI_HIDECONTROLS_LINK = 6,
-	SFI_FULLNAME_TEXT = 7,
-	SFI_DISPLAYNAME_TEXT = 8,
-	SFI_LOGONSTATUS_TEXT = 9,
-	SFI_CHECKBOX = 10,
-	SFI_EDIT_TEXT = 11,
-	SFI_COMBOBOX = 12,
-	SFI_NUM_FIELDS = 13,  // Note: if new fields are added, keep NUM_FIELDS last.  This is used as a count of the number of fields
+	SFI_APP_NAME = 0,
+	SFI_PASSWORD = 1,
+	SFI_SUBMIT_BUTTON = 2,
+	SFI_CONNECT = 3,
+	SFI_USERNAME = 4,
+	SFI_LOGONSTATUS_TEXT = 5,
+	SFI_EMAIL = 6,
+	SFI_TILEIMAGE = 7,
+	SFI_NUM_FIELDS = 8,  // Note: if new fields are added, keep NUM_FIELDS last.  This is used as a count of the number of fields
 };
 
 // The first value indicates when the tile is displayed (selected, not selected)
@@ -53,19 +48,14 @@ struct FIELD_STATE_PAIR
 // The Field interactive state indicates when
 static const FIELD_STATE_PAIR s_rgFieldStatePairs[] =
 {
-	{ CPFS_DISPLAY_IN_BOTH,            CPFIS_NONE    },    // SFI_TILEIMAGE 
-	{ CPFS_HIDDEN,                     CPFIS_NONE    },    // SFI_LABEL
-	{ CPFS_DISPLAY_IN_BOTH,            CPFIS_NONE    },    // SFI_LARGE_TEXT
+	{ CPFS_DISPLAY_IN_BOTH,            CPFIS_NONE    },    // SFI_APP_NAME
 	{ CPFS_HIDDEN,   CPFIS_FOCUSED },    // SFI_PASSWORD
 	{ CPFS_HIDDEN,   CPFIS_NONE },    // SFI_SUBMIT_BUTTON
-	{ CPFS_HIDDEN,   CPFIS_NONE    },    // SFI_LAUNCHWINDOW_LINK
-	{ CPFS_DISPLAY_IN_SELECTED_TILE,   CPFIS_NONE    },    // SFI_HIDECONTROLS_LINK
-	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_FULLNAME_TEXT
-	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_DISPLAYNAME_TEXT
+	{ CPFS_DISPLAY_IN_SELECTED_TILE,   CPFIS_NONE    },    // SFI_CONNECT
+	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_USERNAME
 	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_LOGONSTATUS_TEXT
-	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_CHECKBOX
-	{ CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },    // SFI_EDIT_TEXT
-	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_COMBOBOX
+	{ CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },    // SFI_EMAIL
+	{ CPFS_DISPLAY_IN_BOTH,            CPFIS_NONE },    // SFI_TILEIMAGE 
 };
 
 //BAR: the NAMES and the tiles. I recommand to not earse any tiles at first because it can lead to many problems, and wil require many modifications in the entire code.
@@ -76,24 +66,12 @@ static const FIELD_STATE_PAIR s_rgFieldStatePairs[] =
 // The third is the name of the field, NOT the value which will appear in the field.
 static const CREDENTIAL_PROVIDER_FIELD_DESCRIPTOR s_rgCredProvFieldDescriptors[] =
 {
-	{ SFI_TILEIMAGE,         CPFT_TILE_IMAGE,    L"Image",                      CPFG_CREDENTIAL_PROVIDER_LOGO  },
-	{ SFI_LABEL,             CPFT_SMALL_TEXT,    L"Tooltip",                    CPFG_CREDENTIAL_PROVIDER_LABEL },
-	{ SFI_LARGE_TEXT,        CPFT_LARGE_TEXT,    L"Floryt Credential Provider"                                 }, //STEVEN: edit here did not effected the dll
-	{ SFI_PASSWORD,          CPFT_PASSWORD_TEXT, L"Enter password here"                                        }, //STEVEN: edit here did take effect!!
+	{ SFI_APP_NAME,        CPFT_LARGE_TEXT,    L"Floryt Credential Provider"                                 }, 
+	{ SFI_PASSWORD,          CPFT_PASSWORD_TEXT, L"Enter password here"                                        },
 	{ SFI_SUBMIT_BUTTON,     CPFT_SUBMIT_BUTTON, L"Submit"                                                     },
-	{ SFI_LAUNCHWINDOW_LINK, CPFT_COMMAND_LINK,  L"Launch helper window"                                       },
-	{ SFI_HIDECONTROLS_LINK, CPFT_COMMAND_LINK,  L"Hide additional controls"                                   },
-	{ SFI_FULLNAME_TEXT,     CPFT_SMALL_TEXT,    L"Full name: "                                                },
-	{ SFI_DISPLAYNAME_TEXT,  CPFT_SMALL_TEXT,    L"Display name: "                                             },
+	{ SFI_CONNECT, CPFT_COMMAND_LINK,  L"Connect to server"                                   },
+	{ SFI_USERNAME,     CPFT_SMALL_TEXT,    L"Full name: "                                                },
 	{ SFI_LOGONSTATUS_TEXT,  CPFT_SMALL_TEXT,    L"Logon status: "                                             },
-	{ SFI_CHECKBOX,          CPFT_CHECKBOX,      L"Connect as guest"                                           },
-	{ SFI_EDIT_TEXT,         CPFT_EDIT_TEXT,     L"Enter your email"                                           },
-	{ SFI_COMBOBOX,          CPFT_COMBOBOX,      L"Combobox"                                                   },
-};
-
-static const PWSTR s_rgComboBoxStrings[] =
-{
-	L"First",
-	L"Second",
-	L"Third",
+	{ SFI_EMAIL,         CPFT_EDIT_TEXT,     L"Enter your email"                                           },
+	{ SFI_TILEIMAGE,         CPFT_TILE_IMAGE,    L"Image",                      CPFG_CREDENTIAL_PROVIDER_LOGO },
 };
