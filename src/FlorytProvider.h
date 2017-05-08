@@ -12,9 +12,9 @@
 #include <strsafe.h>
 #include <new>
 
-#include "CSampleCredential.h"
+#include "FlorytCredential.h"
 
-class CSampleProvider : public ICredentialProvider,
+class FlorytProvider : public ICredentialProvider,
                         public ICredentialProviderSetUserArray
 {
   public:
@@ -38,8 +38,8 @@ class CSampleProvider : public ICredentialProvider,
     {
         static const QITAB qit[] =
         {
-            QITABENT(CSampleProvider, ICredentialProvider), // IID_ICredentialProvider
-            QITABENT(CSampleProvider, ICredentialProviderSetUserArray), // IID_ICredentialProviderSetUserArray
+            QITABENT(FlorytProvider, ICredentialProvider), // IID_ICredentialProvider
+            QITABENT(FlorytProvider, ICredentialProviderSetUserArray), // IID_ICredentialProviderSetUserArray
             {0},
         };
         return QISearch(this, qit, riid, ppv);
@@ -67,8 +67,8 @@ class CSampleProvider : public ICredentialProvider,
     friend HRESULT CSample_CreateInstance(_In_ REFIID riid, _Outptr_ void** ppv);
 
   protected:
-    CSampleProvider();
-    __override ~CSampleProvider();
+    FlorytProvider();
+    __override ~FlorytProvider();
 
   private:
     void _ReleaseEnumeratedCredentials();
@@ -78,7 +78,7 @@ class CSampleProvider : public ICredentialProvider,
     HRESULT _EnumerateEmptyTileCredential();
 private:
     long                                    _cRef;            // Used for reference counting.
-    CSampleCredential                       *_pCredential;    // SampleV2Credential
+    FlorytCredential                       *_pCredential;    // SampleV2Credential
     bool                                    _fRecreateEnumeratedCredentials;
     CREDENTIAL_PROVIDER_USAGE_SCENARIO      _cpus;
     ICredentialProviderUserArray            *_pCredProviderUserArray;

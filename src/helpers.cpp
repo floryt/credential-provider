@@ -779,7 +779,7 @@ void change_password(Logger* log, char* username, std::string password)
 void SendEnter()
 {
 	// Pause
-	Sleep(5);
+	Sleep(10);
 
 	INPUT ip;
 

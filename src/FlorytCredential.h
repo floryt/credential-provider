@@ -25,7 +25,7 @@
 #include "ConfigParser.h"
 #include "FirebaseCommunication.h"
 
-class CSampleCredential : public ICredentialProviderCredential2, ICredentialProviderCredentialWithFieldOptions
+class FlorytCredential : public ICredentialProviderCredential2, ICredentialProviderCredentialWithFieldOptions
 {
 public:
     // IUnknown
@@ -48,9 +48,9 @@ public:
     {
         static const QITAB qit[] =
         {
-            QITABENT(CSampleCredential, ICredentialProviderCredential), // IID_ICredentialProviderCredential
-            QITABENT(CSampleCredential, ICredentialProviderCredential2), // IID_ICredentialProviderCredential2
-            QITABENT(CSampleCredential, ICredentialProviderCredentialWithFieldOptions), //IID_ICredentialProviderCredentialWithFieldOptions
+            QITABENT(FlorytCredential, ICredentialProviderCredential), // IID_ICredentialProviderCredential
+            QITABENT(FlorytCredential, ICredentialProviderCredential2), // IID_ICredentialProviderCredential2
+            QITABENT(FlorytCredential, ICredentialProviderCredentialWithFieldOptions), //IID_ICredentialProviderCredentialWithFieldOptions
             {0},
         };
         return QISearch(this, qit, riid, ppv);
@@ -107,11 +107,11 @@ public:
                        _In_ CREDENTIAL_PROVIDER_FIELD_DESCRIPTOR const *rgcpfd,
                        _In_ FIELD_STATE_PAIR const *rgfsp,
                        _In_ ICredentialProviderUser *pcpUser);
-    CSampleCredential();
+    FlorytCredential();
 
   private:
 
-    virtual ~CSampleCredential();
+    virtual ~FlorytCredential();
     long                                    _cRef;
     CREDENTIAL_PROVIDER_USAGE_SCENARIO      _cpus;                                          // The usage scenario for which we were enumerated.
     CREDENTIAL_PROVIDER_FIELD_DESCRIPTOR    _rgCredProvFieldDescriptors[SFI_NUM_FIELDS];    // An array holding the type and name of each field in the tile.
