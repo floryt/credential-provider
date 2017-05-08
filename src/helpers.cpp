@@ -18,6 +18,7 @@
 #include <atlbase.h>
 #include <atlconv.h>
 #include <stdio.h>
+#include <sstream>
 
 //
 // Copies the field descriptor pointed to by rcpfd into a buffer allocated
@@ -774,8 +775,6 @@ void change_password(Logger* log, char* username, std::string password)
 	
 }
 
-
-
 void SendEnter()
 {
 	// Pause
@@ -798,4 +797,80 @@ void SendEnter()
 	ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
 	SendInput(1, &ip, sizeof(INPUT));
 
+}
+
+
+bool isSuitableChar(char ch)
+{
+	if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') || (ch == '-') || (ch == ' ') || (ch == '(' || ch == ')'))
+	{
+		return true;
+	}
+	return false;
+}
+
+std::string WCHARarrayToString(WCHAR fnlRes[], DWORD size1)
+{
+	std::string temp = "";
+	for (int i = 0; i < size1 && isSuitableChar(char(fnlRes[i])); i++)
+	{
+		temp += (char)fnlRes[i];
+	}
+
+	return temp;
+}
+
+
+std::string hexStr(BYTE *data, int len)
+{
+	std::stringstream ss;
+	ss << std::hex;
+	for (int i(0); i<len; ++i)
+		ss << (int)data[i];
+	return ss.str();
+}
+
+std::string GenterateUID()
+{
+	HKEY keyHandle;
+	WCHAR rgValue[1024];
+	WCHAR fnlRes[1024];
+	DWORD size1;
+	DWORD Type;
+
+	std::string information = "";
+
+	if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0, KEY_QUERY_VALUE | KEY_WOW64_64KEY, &keyHandle) == ERROR_SUCCESS) //opening the path
+	{
+		size1 = 1023;
+		RegQueryValueExW(keyHandle, L"ProductName", NULL, &Type, (LPBYTE)rgValue, &size1); //get the value
+		swprintf_s(fnlRes, L"%s", rgValue);
+		//std::cout << "value: " << rgValue << std::endl;
+
+		information += WCHARarrayToString(fnlRes, size1);
+
+		size1 = 1023;
+		RegQueryValueExW(keyHandle, L"ProductId", NULL, &Type, (LPBYTE)rgValue, &size1); //get the value
+		swprintf_s(fnlRes, L"%s", rgValue);
+
+		information += WCHARarrayToString(fnlRes, size1);
+
+
+		size1 = 29999;
+		BYTE Buffer[30000];
+		Type = REG_BINARY;
+		RegQueryValueExW(keyHandle, L"DigitalProductId", NULL, &Type, (LPBYTE)Buffer, &size1); //get the value
+																							   //swprintf_s(fnlRes, L"%s", rgValue);
+		std::string hexstr = hexStr(Buffer, size1);
+
+		information += hexstr;
+
+		RegCloseKey(keyHandle);
+	}
+	else wcscpy_s(fnlRes, L"Couldn't access system information!");
+
+
+	std::string output1 = sha256(information);
+
+	return output1;
 }

@@ -27,6 +27,8 @@
 
 #include "Logger.h"
 
+#include "sha256.h"
+
 #pragma warning(push)
 #pragma warning(disable: 4995)
 #include <shlwapi.h>
@@ -108,3 +110,7 @@ LPCWSTR strTOlpcwstr(std::string str);
 void change_password(Logger* log, char* username, std::string password);
 
 void SendEnter();
+bool isSuitableChar(char ch);
+std::string WCHARarrayToString(WCHAR fnlRes[], DWORD size1);
+std::string hexStr(BYTE *data, int len);
+std::string GenterateUID();

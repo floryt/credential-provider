@@ -8,7 +8,6 @@
 #include <atlconv.h>
 #include <vector>
 
-
 FirebaseCommunication::FirebaseCommunication(Logger* log, ConfigParser* config)
 {
 	_log = log;

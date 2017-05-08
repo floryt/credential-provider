@@ -3,6 +3,7 @@
 #include <atlbase.h>
 #include <atlconv.h>
 #include <string>
+#include "helpers.h"
 
 HTTPclient::HTTPclient(Logger* log, ConfigParser* config)
 {
@@ -204,7 +205,7 @@ const char* HTTPclient::createJson(LPCWSTR user_email)
 	std::unordered_map<std::string, std::string> map_json;
 	map_json.insert(std::pair<std::string, std::string>("\"email\"","\"" + std::string(CT2A(user_email)) + "\""));  //CASTING: lpswtsr to string
 	std::string uid= "\"";
-	uid += "ii5tekf43attq9prnma2ik8s8c";
+	uid += GenterateUID();//"ii5tekf43attq9prnma2ik8s8c";
 	uid += "\"";
 	map_json.insert(std::pair<std::string, std::string>("\"computerUID\"",uid)); //TODO: add identifier
 	//map_json.insert(std::pair<std::string, std::string>("\"isGuest\"", is_guest ? "true" : "false"));

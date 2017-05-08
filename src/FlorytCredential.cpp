@@ -26,7 +26,6 @@
 #include "Logger.h"
 #include <atlbase.h>
 #include <atlconv.h>
-//#include <afxdisp.h>
 
 
 FlorytCredential::FlorytCredential() :
@@ -324,23 +323,10 @@ HRESULT FlorytCredential::SetStringValue(DWORD dwFieldID, _In_ PCWSTR pwz)
 	return hr;
 }
 
-// Returns whether a checkbox is checked or not as well as its label.
+// Not used in our case, but must be due to interface demmands
 HRESULT FlorytCredential::GetCheckboxValue(DWORD dwFieldID, _Out_ BOOL *pbChecked, _Outptr_result_nullonfailure_ PWSTR *ppwszLabel)
 {
 	HRESULT hr = S_OK;
-	//*ppwszLabel = nullptr;
-
-	//// Validate parameters.
-	//if (dwFieldID < ARRAYSIZE(_rgCredProvFieldDescriptors) &&
-	//	(CPFT_CHECKBOX == _rgCredProvFieldDescriptors[dwFieldID].cpft))
-	//{
-	//	*pbChecked = _fChecked;
-	//	hr = SHStrDupW(_rgFieldStrings[SFI_CHECKBOX], ppwszLabel);
-	//}
-	//else
-	//{
-	//	hr = E_INVALIDARG;
-	//}
 
 	return hr;
 }
@@ -365,47 +351,19 @@ HRESULT FlorytCredential::SetCheckboxValue(DWORD dwFieldID, BOOL bChecked)
 	return hr;
 }
 
-// Returns the number of items to be included in the combobox (pcItems), as well as the
-// currently selected item (pdwSelectedItem).
+// Not used in our case, but must be due to interface demmands
 HRESULT FlorytCredential::GetComboBoxValueCount(DWORD dwFieldID, _Out_ DWORD *pcItems, _Deref_out_range_(< , *pcItems) _Out_ DWORD *pdwSelectedItem)
 {
 	HRESULT hr = S_OK;
-	//*pcItems = 0;
-	//*pdwSelectedItem = 0;
-
-	//// Validate parameters.
-	//if (dwFieldID < ARRAYSIZE(_rgCredProvFieldDescriptors) &&
-	//	(CPFT_COMBOBOX == _rgCredProvFieldDescriptors[dwFieldID].cpft))
-	//{
-	//	*pcItems = ARRAYSIZE(s_rgComboBoxStrings);
-	//	*pdwSelectedItem = 0;
-	//	hr = S_OK;
-	//}
-	//else
-	//{
-	//	hr = E_INVALIDARG;
-	//}
 
 	return hr;
 }
 
 
-// Called iteratively to fill the combobox with the string (ppwszItem) at index dwItem.
+// Not used in our case, but must be due to interface demmands
 HRESULT FlorytCredential::GetComboBoxValueAt(DWORD dwFieldID, DWORD dwItem, _Outptr_result_nullonfailure_ PWSTR *ppwszItem)
 {
 	HRESULT hr = S_OK;
-	//*ppwszItem = nullptr;
-
-	//// Validate parameters.
-	//if (dwFieldID < ARRAYSIZE(_rgCredProvFieldDescriptors) &&
-	//	(CPFT_COMBOBOX == _rgCredProvFieldDescriptors[dwFieldID].cpft))
-	//{
-	//	hr = SHStrDupW(s_rgComboBoxStrings[dwItem], ppwszItem);
-	//}
-	//else
-	//{
-	//	hr = E_INVALIDARG;
-	//}
 
 	return hr;
 }
