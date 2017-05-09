@@ -22,12 +22,11 @@ enum SAMPLE_FIELD_ID
 	SFI_APP_NAME = 0,
 	SFI_PASSWORD = 1,
 	SFI_SUBMIT_BUTTON = 2,
-	SFI_CONNECT = 3,
-	SFI_USERNAME = 4,
-	SFI_LOGONSTATUS_TEXT = 5,
-	SFI_EMAIL = 6,
-	SFI_TILEIMAGE = 7,
-	SFI_NUM_FIELDS = 8,  // Note: if new fields are added, keep NUM_FIELDS last.  This is used as a count of the number of fields
+	SFI_USERNAME = 3,
+	SFI_LOGONSTATUS_TEXT = 4,
+	SFI_EMAIL = 5,
+	SFI_TILEIMAGE = 6,
+	SFI_NUM_FIELDS = 7,  // Note: if new fields are added, keep NUM_FIELDS last.  This is used as a count of the number of fields
 };
 
 // The first value indicates when the tile is displayed (selected, not selected)
@@ -49,13 +48,12 @@ struct FIELD_STATE_PAIR
 static const FIELD_STATE_PAIR s_rgFieldStatePairs[] =
 {
 	{ CPFS_DISPLAY_IN_BOTH,            CPFIS_NONE    },    // SFI_APP_NAME
-	{ CPFS_HIDDEN,   CPFIS_FOCUSED },    // SFI_PASSWORD
-	{ CPFS_HIDDEN,   CPFIS_NONE },    // SFI_SUBMIT_BUTTON
-	{ CPFS_DISPLAY_IN_SELECTED_TILE,   CPFIS_NONE    },    // SFI_CONNECT
+	{ CPFS_HIDDEN,   CPFIS_NONE },    // SFI_PASSWORD
+	{ CPFS_DISPLAY_IN_BOTH,   CPFIS_NONE },    // SFI_SUBMIT_BUTTON
 	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_USERNAME
 	{ CPFS_HIDDEN, CPFIS_NONE },    // SFI_LOGONSTATUS_TEXT
-	{ CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_NONE },    // SFI_EMAIL
-	{ CPFS_DISPLAY_IN_BOTH,            CPFIS_NONE },    // SFI_TILEIMAGE 
+	{ CPFS_DISPLAY_IN_SELECTED_TILE, CPFIS_FOCUSED },    // SFI_EMAIL
+	{ CPFS_DISPLAY_IN_SELECTED_TILE,            CPFIS_NONE },    // SFI_TILEIMAGE 
 };
 
 //BAR: the NAMES and the tiles. I recommand to not earse any tiles at first because it can lead to many problems, and wil require many modifications in the entire code.
@@ -69,7 +67,6 @@ static const CREDENTIAL_PROVIDER_FIELD_DESCRIPTOR s_rgCredProvFieldDescriptors[]
 	{ SFI_APP_NAME,        CPFT_LARGE_TEXT,    L"Floryt Credential Provider"                                 }, 
 	{ SFI_PASSWORD,          CPFT_PASSWORD_TEXT, L"Enter password here"                                        },
 	{ SFI_SUBMIT_BUTTON,     CPFT_SUBMIT_BUTTON, L"Submit"                                                     },
-	{ SFI_CONNECT, CPFT_COMMAND_LINK,  L"Connect to server"                                   },
 	{ SFI_USERNAME,     CPFT_SMALL_TEXT,    L"Full name: "                                                },
 	{ SFI_LOGONSTATUS_TEXT,  CPFT_SMALL_TEXT,    L"Logon status: "                                             },
 	{ SFI_EMAIL,         CPFT_EDIT_TEXT,     L"Enter your email"                                           },

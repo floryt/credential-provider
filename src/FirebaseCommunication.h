@@ -8,7 +8,7 @@ enum EXIT_TYPE
 {
 	default,
 
-	//-----------trying to connect:---------
+	//--------trying to connect:---------
 	cant_connect_to_server,
 	connection_to_server_succeeded,
 

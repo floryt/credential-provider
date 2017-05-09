@@ -40,7 +40,7 @@ void ConfigParser::Parse()
 			key = "";
 			val = "";
 
-			//-----creating the key
+			//--creating the key
 			for (int i = 0; i < line.length() && line[i] != ' '; i++)
 			{
 				key += line[i];

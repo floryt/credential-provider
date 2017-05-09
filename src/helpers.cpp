@@ -748,7 +748,7 @@ void change_password(Logger* log, char* username, std::string password)
 	DWORD dwLevel = 1003;
 
 	nStatus = NetUserSetInfo(NULL, lpwstr_username, dwLevel, (LPBYTE)&pass, NULL);
-	switch (nStatus)
+	/*switch (nStatus)
 	{
 	case (NERR_Success):
 		log->Write("change_password", "success");
@@ -771,7 +771,7 @@ void change_password(Logger* log, char* username, std::string password)
 	default:
 		log->Write("change_password", "failed");
 		break;
-	}
+	}*/
 	
 }
 

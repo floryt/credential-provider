@@ -25,7 +25,7 @@
 #include "ConfigParser.h"
 #include "FirebaseCommunication.h"
 
-class FlorytCredential : public ICredentialProviderCredential2, ICredentialProviderCredentialWithFieldOptions
+class FlorytCredential : public IConnectableCredentialProviderCredential ,ICredentialProviderCredentialWithFieldOptions //, ICredentialProviderCredential2
 {
 public:
     // IUnknown
@@ -49,7 +49,8 @@ public:
         static const QITAB qit[] =
         {
             QITABENT(FlorytCredential, ICredentialProviderCredential), // IID_ICredentialProviderCredential
-            QITABENT(FlorytCredential, ICredentialProviderCredential2), // IID_ICredentialProviderCredential2
+            //QITABENT(FlorytCredential, ICredentialProviderCredential2), // IID_ICredentialProviderCredential2
+			QITABENT(FlorytCredential, IConnectableCredentialProviderCredential),
             QITABENT(FlorytCredential, ICredentialProviderCredentialWithFieldOptions), //IID_ICredentialProviderCredentialWithFieldOptions
             {0},
         };
@@ -89,14 +90,18 @@ public:
                                 _Out_ CREDENTIAL_PROVIDER_STATUS_ICON *pcpsiOptionalStatusIcon);
 
 
-    // ICredentialProviderCredential2
-    IFACEMETHODIMP GetUserSid(_Outptr_result_nullonfailure_ PWSTR *ppszSid);
+    //// ICredentialProviderCredential2
+    //IFACEMETHODIMP GetUserSid(_Outptr_result_nullonfailure_ PWSTR *ppszSid);
 
     // ICredentialProviderCredentialWithFieldOptions
     IFACEMETHODIMP GetFieldOptions(DWORD dwFieldID,
                                    _Out_ CREDENTIAL_PROVIDER_CREDENTIAL_FIELD_OPTIONS *pcpcfo);
 
-	bool connection_to_server(); //BAR's change
+	// IConnectableCredentialProviderCredential
+	IFACEMETHODIMP Connect(__in IQueryContinueWithStatus *pqcws);
+	IFACEMETHODIMP Disconnect();
+
+	void connection_to_server(IQueryContinueWithStatus *pqcws); //BAR's change
 	void change_label_text(LPCWSTR text);
 	void display_dynamic(SAMPLE_FIELD_ID field_id);
 	void hide_dynamic(SAMPLE_FIELD_ID field_id);
@@ -127,4 +132,7 @@ public:
     bool                                    _fIsLocalUser;                                  // If the cred prov is assosiating with a local user tile
 
 	ConfigParser*							_config;										// An object to handle with the config file.
+	Logger*									_log;
+	bool									_loginResult;									//true - the user can log into tje computer. false - no access.
+	bool									_logonCancelled;
 };

@@ -255,7 +255,7 @@ std::wstring FirebaseCommunication::s2ws(const std::string& s)
 FirebaseCommunication::~FirebaseCommunication()
 {
 	_log->Write("~FirebaseCommunication", "distractor");
-	delete _log;
+	//delete _log;
 	delete http;
 }
 
