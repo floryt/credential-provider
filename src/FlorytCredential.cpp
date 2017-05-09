@@ -36,7 +36,9 @@ FlorytCredential::FlorytCredential() :
 	_fIsLocalUser(false),
 	_fChecked(false),
 	_fShowControls(false),
-	_dwComboIndex(0)
+	_dwComboIndex(0),
+	_loginResult(false),
+	_logonCancelled(false)
 {
 	DllAddRef();
 
@@ -86,6 +88,8 @@ HRESULT FlorytCredential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
 
 	//BAR: the texts shown in the fileds
 	// Initialize the String value of all the fields.
+	PWSTR pszUserName = nullptr;
+
 	if (SUCCEEDED(hr))
 	{
 		hr = SHStrDupW(L"Floryt", &_rgFieldStrings[SFI_APP_NAME]);
@@ -104,27 +108,48 @@ HRESULT FlorytCredential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
 	}
 	if (SUCCEEDED(hr))
 	{
-		hr = SHStrDupW(L"Click here to connect", &_rgFieldStrings[SFI_CONNECT]);
-	}
-	if (SUCCEEDED(hr))
-	{
 		hr = pcpUser->GetStringValue(PKEY_Identity_QualifiedUserName, &_pszQualifiedUserName);
 	}
 	if (SUCCEEDED(hr))
 	{
-		PWSTR pszUserName;
+		
 		pcpUser->GetStringValue(PKEY_Identity_UserName, &pszUserName); //BAR: getting the username
 		if (pszUserName != nullptr)
 		{
 			wchar_t szString[256];
 			StringCchPrintf(szString, ARRAYSIZE(szString), L"%s", pszUserName);
 			hr = SHStrDupW(szString, &_rgFieldStrings[SFI_USERNAME]); //BAR: put the username in one of the fileds
-			CoTaskMemFree(pszUserName);
+			//CoTaskMemFree(pszUserName);
 		}
 		else
 		{
 			hr = SHStrDupW(L"User Name is NULL", &_rgFieldStrings[SFI_USERNAME]);
 		}
+	}
+	if (SUCCEEDED(hr))
+	{
+		//~~~getting username~~~
+		char str_username[256];
+		wcstombs(str_username, pszUserName, 256);
+		CoTaskMemFree(pszUserName);
+		//_log->Write("connecting_to_server", "username: " + std::string(str_username));
+
+
+		//~~~generating password~~~
+		std::string password = "12345"; //TODO: do random
+
+
+										 //~~~changing password~~~
+		change_password(_log, str_username, password);
+		
+
+		//~~~casting~~~
+		std::wstring stemp = std::wstring(password.begin(), password.end()); //CASTING: string to lpcwstr
+		LPCWSTR result = stemp.c_str();
+
+		//~~~changing~~~
+		hr = SHStrDupW(result, &_rgFieldStrings[SFI_PASSWORD]);
+
 	}
 	if (SUCCEEDED(hr))
 	{
@@ -147,6 +172,7 @@ HRESULT FlorytCredential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
 	{
 		hr = pcpUser->GetSid(&_pszUserSid);
 	}
+	
 
 	return hr;
 }
@@ -181,6 +207,33 @@ HRESULT FlorytCredential::UnAdvise()
 // selected, you would do it here.
 HRESULT FlorytCredential::SetSelected(_Out_ BOOL *pbAutoLogon)
 {
+	_loginResult = false; //it should'nt be true, just making sure everyting is good
+	_logonCancelled = false;
+
+	//--setting another random pass 
+
+	//~~~getting username~~~
+	char str_username[256];
+	wcstombs(str_username, _rgFieldStrings[SFI_USERNAME], 256);
+	//_log->Write("connecting_to_server", "username: " + std::string(str_username));
+
+
+	//~~~generating password~~~
+	std::string password = "123456"; //TODO: do random
+
+
+	//~~~changing password~~~
+	change_password(_log, str_username, password);
+
+
+	//~~~casting~~~
+	std::wstring stemp = std::wstring(password.begin(), password.end()); //CASTING: string to lpcwstr
+	LPCWSTR result = stemp.c_str();
+
+	//~~~changing~~~
+	SHStrDupW(result, &_rgFieldStrings[SFI_PASSWORD]);
+
+
 	*pbAutoLogon = FALSE;
 	return S_OK;
 }
@@ -290,7 +343,7 @@ HRESULT FlorytCredential::GetSubmitButtonValue(DWORD dwFieldID, _Out_ DWORD *pdw
 	{
 		// pdwAdjacentTo is a pointer to the fieldID you want the submit button to
 		// appear next to.
-		*pdwAdjacentTo = SFI_PASSWORD;
+		*pdwAdjacentTo = SFI_EMAIL;
 		hr = S_OK;
 	}
 	else
@@ -429,7 +482,6 @@ bool FlorytCredential::post_step(POST_STEP step, FirebaseCommunication* server) 
 	{
 		//change_label_text(_rgFieldStrings[SFI_EDIT_TEXT]);
 		change_label_text(*recived_message);
-		display_dynamic(SFI_CONNECT);
 		display_dynamic(SFI_EMAIL);
 
 	}
@@ -453,7 +505,6 @@ bool FlorytCredential::post_step(POST_STEP step, FirebaseCommunication* server) 
 		//********************************************
 		change_label_text(result);
 
-		display_dynamic(SFI_CONNECT);
 		display_dynamic(SFI_EMAIL);
 
 
@@ -461,7 +512,7 @@ bool FlorytCredential::post_step(POST_STEP step, FirebaseCommunication* server) 
 	else if (exit == time_out)
 	{
 		change_label_text(L"the request timed out");
-		display_dynamic(SFI_CONNECT);
+
 		display_dynamic(SFI_EMAIL);
 
 	}
@@ -469,23 +520,22 @@ bool FlorytCredential::post_step(POST_STEP step, FirebaseCommunication* server) 
 }
 
 
-bool FlorytCredential::connection_to_server()
+void FlorytCredential::connection_to_server(IQueryContinueWithStatus *pqcws)
 {
 	//-----------------------------------------------------------------------
 	
-	Logger* log = new Logger("C:\\Users\\User\\Desktop\\log.txt"); //TODO- path from registry
-	log->Write("connection_to_server", "--------------------------------------------------");
+	//_log = new Logger("C:\\Users\\User\\Desktop\\log.txt"); //TODO- path from registry
+	_log->Write("connection_to_server", "--------------------------------------------------");
 
-	_config = new ConfigParser("C:\\Users\\User\\Desktop\\config.txt", log);
+	_config = new ConfigParser("C:\\Users\\User\\Desktop\\config.txt", _log);
 	_config->Parse();
 
 	bool to_return = false;
 	bool hr = false;
 
-	FirebaseCommunication* server = new FirebaseCommunication(log, _config);
+	FirebaseCommunication* server = new FirebaseCommunication(_log, _config);
 
-	hide_dynamic(SFI_CONNECT);
-	hide_dynamic(SFI_EMAIL);
+	/*hide_dynamic(SFI_EMAIL);*/
 	display_dynamic(SFI_LOGONSTATUS_TEXT);
 	
 
@@ -497,8 +547,8 @@ bool FlorytCredential::connection_to_server()
 	LPCWSTR result = stemp.c_str();
 	//********************************************
 
-	change_label_text(result);
-
+	//change_label_text(result);
+	pqcws->SetStatusMessage(result);
 
 
 	exit = server->TryToConnect();
@@ -513,8 +563,9 @@ bool FlorytCredential::connection_to_server()
 		LPCWSTR result = stemp.c_str();
 		//********************************************
 		change_label_text(result);
+		
 
-		display_dynamic(SFI_CONNECT);
+		/*display_dynamic(SFI_CONNECT);*/
 		display_dynamic(SFI_EMAIL);
 		
 	}
@@ -527,8 +578,8 @@ bool FlorytCredential::connection_to_server()
 		LPCWSTR result = stemp.c_str();
 		//********************************************
 
-		change_label_text(result);
-
+		//change_label_text(result);
+		pqcws->SetStatusMessage(result);
 		hr = post_step(obtain_user_identity, server);
 		if(hr)
 		{
@@ -537,100 +588,32 @@ bool FlorytCredential::connection_to_server()
 			std::wstring stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
 			LPCWSTR result = stemp.c_str();
 			//********************************************
-			change_label_text(result);
+			//change_label_text(result);
+			pqcws->SetStatusMessage(result);
+
 
 			hr = post_step(obtain_admin_permission, server);
 			if(hr)
 			{
-				//---------proccess succeeded-------
-
-				//~~~getting username~~~
-				PWSTR field_username = _rgFieldStrings[SFI_USERNAME];
-				char str_username[256];
-				wcstombs(str_username, field_username, 256);
-				log->Write("connecting_to_server", "username: " + std::string(str_username));
-
-
-				//~~~generating password~~~
-				std::string password = "12345"; //TODO: do random
-
-
-				//~~~changing password~~~
-				change_password(log, str_username, password);
-				CoTaskMemFree(field_username);
-
-
-				//~~~putting password in field~~~
-				std::wstring stemp = std::wstring(password.begin(), password.end()); //CASTING: string to lpcwstr
-				LPCWSTR result = stemp.c_str();
-				_pCredProvCredentialEvents->BeginFieldUpdates();
-				_pCredProvCredentialEvents->SetFieldString(nullptr, SFI_PASSWORD, result);
-				_pCredProvCredentialEvents->EndFieldUpdates();
-
-
-				to_return = true;
+				_loginResult = true;
 			}
 		}
+	
 	}
 
 	delete server;
 
 	delete _config;
 
-	return to_return;
 
 }
 
 
-
+//we do not use this func
 // Called when the user clicks a command link.
 HRESULT FlorytCredential::CommandLinkClicked(DWORD dwFieldID)
 {
 	HRESULT hr = S_OK;
-
-	CREDENTIAL_PROVIDER_FIELD_STATE cpfsShow = CPFS_HIDDEN;
-
-	// Validate parameter.
-	if (dwFieldID < ARRAYSIZE(_rgCredProvFieldDescriptors) &&
-		(CPFT_COMMAND_LINK == _rgCredProvFieldDescriptors[dwFieldID].cpft))
-	{
-		HWND hwndOwner = nullptr;
-		switch (dwFieldID)
-		{
-		case SFI_CONNECT:
-			if (connection_to_server()) //if the connection has succeeded and the user has been authenticated
-			{
-				//show other fileds
-				_pCredProvCredentialEvents->BeginFieldUpdates();
-				cpfsShow = CPFS_DISPLAY_IN_SELECTED_TILE; //status SHOW
-				
-				_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_PASSWORD, cpfsShow);
-				_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_SUBMIT_BUTTON, cpfsShow);
-
-				_pCredProvCredentialEvents->SetFieldState(nullptr, SFI_CONNECT, CPFS_HIDDEN); //hiding the first authentication
-
-				//_pCredProvCredentialEvents->SetFieldString(nullptr, SFI_HIDECONTROLS_LINK, _fShowControls ? L"Hide additional controls" : L"Show additional controls");
-
-				//_pCredProvCredentialEvents->SetFieldString(nullptr, SFI_PASSWORD, L"hello"); //changing to password
-
-				_pCredProvCredentialEvents->EndFieldUpdates();
-				_fShowControls = !_fShowControls; //BAR: changing the state for next time
-
-
-
-				SendEnter();
-			}
-			break;
-
-
-		default:
-			hr = E_INVALIDARG;
-		}
-	}
-	else
-	{
-		hr = E_INVALIDARG;
-	}
 
 	return hr;
 }
@@ -643,7 +626,20 @@ HRESULT FlorytCredential::GetSerialization(_Out_ CREDENTIAL_PROVIDER_GET_SERIALI
 	_Outptr_result_maybenull_ PWSTR *ppwszOptionalStatusText,
 	_Out_ CREDENTIAL_PROVIDER_STATUS_ICON *pcpsiOptionalStatusIcon)
 {
+	if (_logonCancelled)
+	{
+		//the logon has been canceled
+		return S_FALSE;
+	}
 
+	if (!_loginResult)
+	{
+		//no access
+		return S_FALSE;
+
+	}
+
+	//~~~~~~~~~~~~~~~~~~~~At this point, we have a successful logon. The user may log into the computer.~~~~~~~~~~~~~~
 
 	//BAR: we get a pointer to an object from winlogon who calls the foo. we then arrange the username and passwords as requested (hashing the passwords),
 	//	   and requesting the LSA to load an authentication package. this "package" (actually a dll) will determine if to log the user into the system.
@@ -816,20 +812,20 @@ HRESULT FlorytCredential::ReportResult(NTSTATUS ntsStatus,
 	return S_OK;
 }
 
-// Gets the SID of the user corresponding to the credential.
-HRESULT FlorytCredential::GetUserSid(_Outptr_result_nullonfailure_ PWSTR *ppszSid)
-{
-	*ppszSid = nullptr;
-	HRESULT hr = E_UNEXPECTED;
-	if (_pszUserSid != nullptr)
-	{
-		hr = SHStrDupW(_pszUserSid, ppszSid);
-	}
-	// Return S_FALSE with a null SID in ppszSid for the
-	// credential to be associated with an empty user tile.
-
-	return hr;
-}
+//// Gets the SID of the user corresponding to the credential.
+//HRESULT FlorytCredential::GetUserSid(_Outptr_result_nullonfailure_ PWSTR *ppszSid)
+//{
+//	*ppszSid = nullptr;
+//	HRESULT hr = E_UNEXPECTED;
+//	if (_pszUserSid != nullptr)
+//	{
+//		hr = SHStrDupW(_pszUserSid, ppszSid);
+//	}
+//	// Return S_FALSE with a null SID in ppszSid for the
+//	// credential to be associated with an empty user tile.
+//
+//	return hr;
+//}
 
 // GetFieldOptions to enable the password reveal button and touch keyboard auto-invoke in the password field.
 HRESULT FlorytCredential::GetFieldOptions(DWORD dwFieldID,
@@ -842,4 +838,54 @@ HRESULT FlorytCredential::GetFieldOptions(DWORD dwFieldID,
 		*pcpcfo = CPCFO_ENABLE_PASSWORD_REVEAL;
 	}
 	return S_OK;
+}
+
+IFACEMETHODIMP FlorytCredential::Connect(IQueryContinueWithStatus *pqcws)
+{
+	
+	_log = new Logger("C:\\Users\\User\\Desktop\\log.txt"); //TODO- path from registry
+
+	_log->Write("Connect", "in connect");
+
+	_loginResult = false; //making sure no one wants to hack us :)
+	_logonCancelled = false;
+
+	connection_to_server(pqcws);
+
+	if (pqcws) //making sure it's not null
+	{
+		// Did the user click the "Cancel" button?
+		if (pqcws->QueryContinue() != S_OK)
+		{
+			_logonCancelled = true;
+			_log->Write("Connect", "logon has been cancelled");
+		}
+		else
+		{
+			if (_loginResult)
+			{
+				_log->Write("Connect", "Logon server proccess succeeded");
+			}
+			else
+			{
+				_log->Write("Connect", "Logon server proccess failed");
+				display_dynamic(SFI_LOGONSTATUS_TEXT);
+
+			}
+		}
+		
+	}
+	
+	//NOTE: if we do not update the logonstatus field, a default message will be presented.
+
+
+	delete _log;
+
+	return S_OK;
+}
+
+IFACEMETHODIMP FlorytCredential::Disconnect()
+{
+	_log->Write("DisConnect", "here");
+	return E_NOTIMPL;
 }
