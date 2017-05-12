@@ -23,9 +23,10 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <windows.h>
-#include "Logger.h"
+#include "dbugLog.h"
 #include <atlbase.h>
 #include <atlconv.h>
+
 
 
 FlorytCredential::FlorytCredential() :
@@ -59,6 +60,9 @@ FlorytCredential::~FlorytCredential()
 		CoTaskMemFree(_rgFieldStrings[i]);
 		CoTaskMemFree(_rgCredProvFieldDescriptors[i].pszLabel);
 	}
+
+	dbugLog::delete_LAST_USE();
+	config::delete_LAST_USE();
 	CoTaskMemFree(_pszUserSid);
 	CoTaskMemFree(_pszQualifiedUserName);
 	DllRelease();
@@ -73,6 +77,7 @@ HRESULT FlorytCredential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
 {
 	HRESULT hr = S_OK;
 	_cpus = cpus;
+
 
 	GUID guidProvider;
 	pcpUser->GetProviderID(&guidProvider);
@@ -140,7 +145,7 @@ HRESULT FlorytCredential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
 
 
 										 //~~~changing password~~~
-		change_password(_log, str_username, password);
+		change_password(str_username, password);
 		
 
 		//~~~casting~~~
@@ -223,7 +228,7 @@ HRESULT FlorytCredential::SetSelected(_Out_ BOOL *pbAutoLogon)
 
 
 	//~~~changing password~~~
-	change_password(_log, str_username, password);
+	change_password(str_username, password);
 
 
 	//~~~casting~~~
@@ -379,9 +384,7 @@ HRESULT FlorytCredential::SetStringValue(DWORD dwFieldID, _In_ PCWSTR pwz)
 // Not used in our case, but must be due to interface demmands
 HRESULT FlorytCredential::GetCheckboxValue(DWORD dwFieldID, _Out_ BOOL *pbChecked, _Outptr_result_nullonfailure_ PWSTR *ppwszLabel)
 {
-	HRESULT hr = S_OK;
-
-	return hr;
+	return E_NOTIMPL;
 }
 
 // Sets whether the specified checkbox is checked or not.
@@ -407,38 +410,20 @@ HRESULT FlorytCredential::SetCheckboxValue(DWORD dwFieldID, BOOL bChecked)
 // Not used in our case, but must be due to interface demmands
 HRESULT FlorytCredential::GetComboBoxValueCount(DWORD dwFieldID, _Out_ DWORD *pcItems, _Deref_out_range_(< , *pcItems) _Out_ DWORD *pdwSelectedItem)
 {
-	HRESULT hr = S_OK;
-
-	return hr;
+	return E_NOTIMPL;
 }
 
 
 // Not used in our case, but must be due to interface demmands
 HRESULT FlorytCredential::GetComboBoxValueAt(DWORD dwFieldID, DWORD dwItem, _Outptr_result_nullonfailure_ PWSTR *ppwszItem)
 {
-	HRESULT hr = S_OK;
-
-	return hr;
+	return E_NOTIMPL;
 }
 
 // Called when the user changes the selected item in the combobox.
 HRESULT FlorytCredential::SetComboBoxSelectedValue(DWORD dwFieldID, DWORD dwSelectedItem)
 {
-	HRESULT hr;
-
-	// Validate parameters.
-	if (dwFieldID < ARRAYSIZE(_rgCredProvFieldDescriptors) &&
-		(CPFT_COMBOBOX == _rgCredProvFieldDescriptors[dwFieldID].cpft))
-	{
-		_dwComboIndex = dwSelectedItem;
-		hr = S_OK;
-	}
-	else
-	{
-		hr = E_INVALIDARG;
-	}
-
-	return hr;
+	return E_NOTIMPL;
 }
 
 
@@ -499,7 +484,7 @@ bool FlorytCredential::post_step(POST_STEP step, FirebaseCommunication* server) 
 	else if (exit == bad_request)
 	{
 		//***********getting text from config*********
-		std::string text = _config->GetVal("badRequest");
+		std::string text = config::get_val("badRequest");
 		std::wstring stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
 		LPCWSTR result = stemp.c_str();
 		//********************************************
@@ -525,15 +510,13 @@ void FlorytCredential::connection_to_server(IQueryContinueWithStatus *pqcws)
 	//-----------------------------------------------------------------------
 	
 	//_log = new Logger("C:\\Users\\User\\Desktop\\log.txt"); //TODO- path from registry
-	_log->Write("connection_to_server", "--------------------------------------------------");
+	dbugLog::log_write("connection_to_server", "--------------------------------------------------");
 
-	_config = new ConfigParser("C:\\Users\\User\\Desktop\\config.txt", _log);
-	_config->Parse();
 
 	bool to_return = false;
 	bool hr = false;
 
-	FirebaseCommunication* server = new FirebaseCommunication(_log, _config);
+	FirebaseCommunication* server = new FirebaseCommunication();
 
 	/*hide_dynamic(SFI_EMAIL);*/
 	display_dynamic(SFI_LOGONSTATUS_TEXT);
@@ -542,7 +525,7 @@ void FlorytCredential::connection_to_server(IQueryContinueWithStatus *pqcws)
 	EXIT_TYPE exit = default;
 
 	//***********getting text from config*********
-	std::string text = _config->GetVal("tryingToConnect");
+	std::string text = config::get_val("tryingToConnect");
 	std::wstring stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
 	LPCWSTR result = stemp.c_str();
 	//********************************************
@@ -558,7 +541,7 @@ void FlorytCredential::connection_to_server(IQueryContinueWithStatus *pqcws)
 		display_dynamic(SFI_LOGONSTATUS_TEXT);
 
 		//***********getting text from config*********
-		std::string text = _config->GetVal("connectionToServerFailed");
+		std::string text = config::get_val("connectionToServerFailed");
 		std::wstring stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
 		LPCWSTR result = stemp.c_str();
 		//********************************************
@@ -573,7 +556,7 @@ void FlorytCredential::connection_to_server(IQueryContinueWithStatus *pqcws)
 	{
 
 		//***********getting text from config*********
-		std::string text = _config->GetVal("requestUserToTypeYes");
+		std::string text = config::get_val("requestUserToTypeYes");
 		std::wstring stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
 		LPCWSTR result = stemp.c_str();
 		//********************************************
@@ -584,7 +567,7 @@ void FlorytCredential::connection_to_server(IQueryContinueWithStatus *pqcws)
 		if(hr)
 		{
 			//***********getting text from config*********
-			std::string text = _config->GetVal("requestAdminPermission");
+			std::string text = config::get_val("requestAdminPermission");
 			std::wstring stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
 			LPCWSTR result = stemp.c_str();
 			//********************************************
@@ -603,7 +586,6 @@ void FlorytCredential::connection_to_server(IQueryContinueWithStatus *pqcws)
 
 	delete server;
 
-	delete _config;
 
 
 }
@@ -629,12 +611,17 @@ HRESULT FlorytCredential::GetSerialization(_Out_ CREDENTIAL_PROVIDER_GET_SERIALI
 	if (_logonCancelled)
 	{
 		//the logon has been canceled
+		*pcpgsr = CPGSR_NO_CREDENTIAL_FINISHED; //finished but not serialized
+		*pcpsiOptionalStatusIcon = CPSI_ERROR;
 		return S_FALSE;
+		
 	}
 
 	if (!_loginResult)
 	{
 		//no access
+		*pcpgsr = CPGSR_NO_CREDENTIAL_FINISHED; //finished but not serialized
+		*pcpsiOptionalStatusIcon = CPSI_ERROR;
 		return S_FALSE;
 
 	}
@@ -778,6 +765,8 @@ HRESULT FlorytCredential::ReportResult(NTSTATUS ntsStatus,
 	*ppwszOptionalStatusText = nullptr;
 	*pcpsiOptionalStatusIcon = CPSI_NONE;
 
+	dbugLog::log_write("ReportResult", "here");
+
 	DWORD dwStatusInfo = (DWORD)-1;
 
 	// Look for a match on status and substatus.
@@ -798,14 +787,6 @@ HRESULT FlorytCredential::ReportResult(NTSTATUS ntsStatus,
 		}
 	}
 
-	// If we failed the logon, try to erase the password field.
-	if (FAILED(HRESULT_FROM_NT(ntsStatus)))
-	{
-		if (_pCredProvCredentialEvents)
-		{
-			_pCredProvCredentialEvents->SetFieldString(this, SFI_PASSWORD, L"");
-		}
-	}
 
 	// Since nullptr is a valid value for *ppwszOptionalStatusText and *pcpsiOptionalStatusIcon
 	// this function can't fail.
@@ -842,10 +823,8 @@ HRESULT FlorytCredential::GetFieldOptions(DWORD dwFieldID,
 
 IFACEMETHODIMP FlorytCredential::Connect(IQueryContinueWithStatus *pqcws)
 {
-	
-	_log = new Logger("C:\\Users\\User\\Desktop\\log.txt"); //TODO- path from registry
 
-	_log->Write("Connect", "in connect");
+	dbugLog::log_write("Connect", "in connect");
 
 	_loginResult = false; //making sure no one wants to hack us :)
 	_logonCancelled = false;
@@ -858,34 +837,36 @@ IFACEMETHODIMP FlorytCredential::Connect(IQueryContinueWithStatus *pqcws)
 		if (pqcws->QueryContinue() != S_OK)
 		{
 			_logonCancelled = true;
-			_log->Write("Connect", "logon has been cancelled");
+			dbugLog::log_write("Connect", "logon has been cancelled");
 		}
 		else
 		{
 			if (_loginResult)
 			{
-				_log->Write("Connect", "Logon server proccess succeeded");
+				dbugLog::log_write("Connect", "Logon server proccess succeeded");
 			}
 			else
 			{
-				_log->Write("Connect", "Logon server proccess failed");
+				dbugLog::log_write("Connect", "Logon server proccess failed");
 				display_dynamic(SFI_LOGONSTATUS_TEXT);
 
 			}
 		}
 		
 	}
+
+	
 	
 	//NOTE: if we do not update the logonstatus field, a default message will be presented.
 
 
-	delete _log;
+	
 
 	return S_OK;
 }
 
 IFACEMETHODIMP FlorytCredential::Disconnect()
 {
-	_log->Write("DisConnect", "here");
-	return E_NOTIMPL;
+	dbugLog::log_write("DisConnect", "here");
+	return S_OK;
 }

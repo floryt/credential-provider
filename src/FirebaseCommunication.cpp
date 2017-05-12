@@ -8,11 +8,9 @@
 #include <atlconv.h>
 #include <vector>
 
-FirebaseCommunication::FirebaseCommunication(Logger* log, ConfigParser* config)
+FirebaseCommunication::FirebaseCommunication()
 {
-	_log = log;
-	_config = config;
-	http = new HTTPclient(_log, _config);
+	http = new HTTPclient();
 	cv = false;
 	
 }
@@ -23,7 +21,7 @@ EXIT_TYPE FirebaseCommunication::TryToConnect()
 
 	EXIT_TYPE to_return;
 
-	_log->Write("TryToConnect", "attempting to connect");
+	dbugLog::log_write("TryToConnect", "attempting to connect");
 
 	//------------------------------ping------------------------------
 
@@ -31,7 +29,7 @@ EXIT_TYPE FirebaseCommunication::TryToConnect()
 	std::string answer = "_"; //so if the request failed we will se "_" in the log
 
 	//***********getting text from config*********
-	std::string firebase_function = _config->GetVal("GETcheckConnectionFooName");
+	std::string firebase_function = config::get_val("GETcheckConnectionFooName");
 	//********************************************
 
 	char* data = ""; //there is no data for GET
@@ -50,17 +48,17 @@ EXIT_TYPE FirebaseCommunication::TryToConnect()
 	//waiting for response 
 	while (cv == false)
 	{
-		_log->Write("TryToConnect", "no response yet");
+		dbugLog::log_write("TryToConnect", "no response yet");
 		Sleep(1000);
 	}
 
 	//---after reciving response
 	std::string ans(answer);
-	_log->Write("TryToConnect", "recived: " + ans);
+	dbugLog::log_write("TryToConnect", "recived: " + ans);
 
 	if (isError)
 	{
-		_log->Write("TryToConnect", "could'nt connect");
+		dbugLog::log_write("TryToConnect", "could'nt connect");
 		to_return = cant_connect_to_server;
 	}
 	else
@@ -69,12 +67,12 @@ EXIT_TYPE FirebaseCommunication::TryToConnect()
 		//processig the data
 		if (strcmp(answer.c_str(), "OK") == 0)
 		{
-			_log->Write("TryToConnect", "connection succeeded");
+			dbugLog::log_write("TryToConnect", "connection succeeded");
 			to_return = connection_to_server_succeeded;
 		}
 		else
 		{
-			_log->Write("TryToConnect", "connection failed");
+			dbugLog::log_write("TryToConnect", "connection failed");
 			to_return = cant_connect_to_server;
 		}
 	}
@@ -115,7 +113,7 @@ EXIT_TYPE FirebaseCommunication::AuthenticationPost(LPCWSTR username, LPCWSTR* r
 	{
 		mes = "obtainAdminPermission";
 	}
-	_log->Write("AuthenticationPost", "attempting to Authenticate: step " + mes);
+	dbugLog::log_write("AuthenticationPost", "attempting to Authenticate: step " + mes);
 
 	//------------------------------post------------------------------
 
@@ -127,32 +125,32 @@ EXIT_TYPE FirebaseCommunication::AuthenticationPost(LPCWSTR username, LPCWSTR* r
 	if (step == obtain_user_identity)
 	{
 		//***********getting text from config*********
-		firebase_function = _config->GetVal("POSTobtainUserIdentityFooName");
+		firebase_function = config::get_val("POSTobtainUserIdentityFooName");
 		//********************************************
 	}
 	else if (step == obtain_admin_permission)
 	{
 		//***********getting text from config*********
-		firebase_function = _config->GetVal("POSTobtainAdminPermissionFooName");
+		firebase_function = config::get_val("POSTobtainAdminPermissionFooName");
 		//********************************************
 	}
 
 	bool isError = false;
 	char* data = _strdup(http->createJson(username)); //"{\"username\":\"Steven\",\"computerUID\":\"123456789\"}"; //from const char* to char*
 	std::string tempd(data);
-	_log->Write("AuthenticationPost", "created json: " + tempd + "length: "+ std::to_string(tempd.length()));
+	dbugLog::log_write("AuthenticationPost", "created json: " + tempd + "length: "+ std::to_string(tempd.length()));
 	
 	if (tempd.length() > 0) //to prevent exception
 	{
 		if (data[0] == ' ') //fixing bug
 		{
 			data[0] = '{';
-			_log->Write("AuthenticationPost", "[FIXED] fixed json: " + std::string(data));
+			dbugLog::log_write("AuthenticationPost", "[FIXED] fixed json: " + std::string(data));
 		}
 	}
 	else
 	{
-		_log->Write("AuthenticationPost", "[ERROR] json is empty");
+		dbugLog::log_write("AuthenticationPost", "[ERROR] json is empty");
 	}
 	
 
@@ -169,14 +167,14 @@ EXIT_TYPE FirebaseCommunication::AuthenticationPost(LPCWSTR username, LPCWSTR* r
 	//waiting for response 
 	while (cv == false)
 	{
-		_log->Write("AuthenticationPost", "no response yet");
+		dbugLog::log_write("AuthenticationPost", "no response yet");
 		Sleep(1000);
 	}
 
 
 	//---after reciving response
 	std::string ans(answer);
-	_log->Write("AuthenticationPost", "got response: " + ans);
+	dbugLog::log_write("AuthenticationPost", "got response: " + ans);
 
 
 	if (isError) //it could be a timeout for example
@@ -184,12 +182,12 @@ EXIT_TYPE FirebaseCommunication::AuthenticationPost(LPCWSTR username, LPCWSTR* r
 		if (strcmp((answer.substr(0, 11)).c_str(), "12002") == 0)
 		{
 			to_return = time_out;
-			_log->Write("AuthenticationPost", "detedcet timeout");
+			dbugLog::log_write("AuthenticationPost", "detedcet timeout");
 		}
 		else
 		{
 			to_return = bad_request; //it's not a bad request but it will be handled the same way
-			_log->Write("AuthenticationPost", "detedcet some error in request");
+			dbugLog::log_write("AuthenticationPost", "detedcet some error in request");
 		}
 	}
 	else
@@ -199,7 +197,7 @@ EXIT_TYPE FirebaseCommunication::AuthenticationPost(LPCWSTR username, LPCWSTR* r
 		//processig the data
 		if (strcmp((answer.substr(0, 11)).c_str(), "Bad Request") == 0)
 		{
-			_log->Write("AuthenticationPost", "connection failed: Bad request");
+			dbugLog::log_write("AuthenticationPost", "connection failed: Bad request");
 			to_return = bad_request;
 		}
 		else //we got an actual data
@@ -214,22 +212,22 @@ EXIT_TYPE FirebaseCommunication::AuthenticationPost(LPCWSTR username, LPCWSTR* r
 			if (message->size() == 2) //bug fix - message is ""
 			{
 				(*message) = ":)"; //recived no messgae. TODO- update field in struct
-				_log->Write("AuthenticationPost", "detected message bug - recived empty message");
+				dbugLog::log_write("AuthenticationPost", "detected message bug - recived empty message");
 			}
 			std::wstring stemp = std::wstring(message->begin(), message->end()); //CASTING: string to lpcwstr
 			LPCWSTR result = stemp.c_str();
 			(*recived_message) = result;
-			_log->Write("AuthenticationPost", "message from admin: " + (*message));
+			dbugLog::log_write("AuthenticationPost", "message from admin: " + (*message));
 
 			if (isAccess) //access = true
 			{
 
-				_log->Write("AuthenticationPost", "step succeeded");
+				dbugLog::log_write("AuthenticationPost", "step succeeded");
 				to_return = authentication_succeeded;
 			}
 			else
 			{
-				_log->Write("AuthenticationPost", "access denied");
+				dbugLog::log_write("AuthenticationPost", "access denied");
 				to_return = access_denied;
 			}
 
@@ -240,7 +238,7 @@ EXIT_TYPE FirebaseCommunication::AuthenticationPost(LPCWSTR username, LPCWSTR* r
 	return to_return;
 }
 
-std::wstring FirebaseCommunication::s2ws(const std::string& s)
+std::wstring FirebaseCommunication::s2ws(const std::string& s) //TODO: move to helpers
 {
 	int len;
 	int slength = (int)s.length() + 1;
@@ -254,28 +252,23 @@ std::wstring FirebaseCommunication::s2ws(const std::string& s)
 
 FirebaseCommunication::~FirebaseCommunication()
 {
-	_log->Write("~FirebaseCommunication", "distractor");
+	dbugLog::log_write("~FirebaseCommunication", "distractor");
 	//delete _log;
 	delete http;
 }
 
 
-Logger* FirebaseCommunication::GetLog()
-{
-	return _log;
-}
-
 void FirebaseCommunication::ThreadWait(std::string req_type, char* data, std::string &packet_buffer, bool& is_Error)
 {
 	char* ans;
 	bool isError = false;
-	if (req_type == "/connectivityCheck") //TODO: send struct and return struct
+	if (req_type == "/connectivity_check") //TODO: send struct and return struct
 	{
 		ans = http->GET(isError, _strdup(req_type.c_str()));  //CASTING: string to char*
 		std::string str(ans);
 		packet_buffer = ans;
 	}
-	else if (req_type == "/obtainIdentityVerification" || req_type == "/obtainAdminPermission" || req_type == "/DLLmock") //TODO: get from config
+	else if (req_type == "/obtain_identity_verification" || req_type == "/obtain_admin_permission" || req_type == "/dll_mock") //TODO: get from config
 	{
 		std::vector<char> cstr(req_type.c_str(), req_type.c_str() + req_type.size() + 1);
 		ans = http->POST(data, isError, _strdup(req_type.c_str()));

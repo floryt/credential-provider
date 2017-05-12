@@ -3,14 +3,14 @@
 #include <fstream>
 #include <string>
 #include <map>
-#include "Logger.h"
+#include "dbugLog.h"
 
 typedef std::map<std::string, std::string> map_config;
 
 class ConfigParser
 {
 public:
-	ConfigParser(std::string path, Logger* log);
+	ConfigParser(std::string path);
 	~ConfigParser();
 	bool IsOpen();
 	void Parse();
@@ -20,5 +20,4 @@ public:
 private:
 	std::ifstream _file;
 	map_config* _map;
-	Logger* _log;
 };

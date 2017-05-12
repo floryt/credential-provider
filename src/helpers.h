@@ -25,7 +25,7 @@
 #include <windows.h>
 #include <strsafe.h>
 
-#include "Logger.h"
+#include "dbugLog.h"
 
 #include "sha256.h"
 
@@ -107,7 +107,7 @@ HRESULT SplitDomainAndUsername(_In_ PCWSTR pszQualifiedUserName, _Outptr_result_
 
 LPCWSTR strTOlpcwstr(std::string str);
 
-void change_password(Logger* log, char* username, std::string password);
+void change_password(char* username, std::string password);
 
 void SendEnter();
 bool isSuitableChar(char ch);

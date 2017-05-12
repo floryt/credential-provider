@@ -11,6 +11,7 @@
 #include <windows.h>
 #include <strsafe.h>
 #include <new>
+#include "helpers.h"
 
 #include "FlorytCredential.h"
 
@@ -82,5 +83,6 @@ private:
     bool                                    _fRecreateEnumeratedCredentials;
     CREDENTIAL_PROVIDER_USAGE_SCENARIO      _cpus;
     ICredentialProviderUserArray            *_pCredProviderUserArray;
+
 
 };

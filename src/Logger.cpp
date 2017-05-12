@@ -19,8 +19,11 @@ Logger::~Logger()
 
 void Logger::Write(std::string foo_name, std::string data)
 {
-	clock_t mili = clock();
-	_log << timeStamp() << "."<<mili<< " | " << foo_name << " | " << data << std::endl;
+	if (_log.is_open())
+	{
+		clock_t mili = clock();
+		_log << timeStamp() << "." << mili << " | " << foo_name << " | " << data << std::endl;
+	}
 }
 
 std::_Timeobj<char, const tm*> Logger::timeStamp()

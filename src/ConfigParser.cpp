@@ -3,14 +3,13 @@
 #include <algorithm>
 
 //TODO: get the path from registry
-ConfigParser::ConfigParser(std::string path, Logger* log)
+ConfigParser::ConfigParser(std::string path)
 {
 	/*TCHAR buffer[500];
 	DWORD bufferSize = sizeof(buffer);*/
 	_file.open(path.c_str());  //IMPORTANT TODO - check how to know if file filed
 	/*std::cout << "opened file" << std::endl;*/
 	_map = new map_config();
-	_log = log;
 }
 
 ConfigParser::~ConfigParser()
@@ -19,11 +18,13 @@ ConfigParser::~ConfigParser()
 	_file.close();
 }
 
+//is file open
 bool ConfigParser::IsOpen()
 {
 	return _file.is_open();
 }
 
+//parsing the config
 void ConfigParser::Parse()
 {
 	std::string line;
@@ -31,7 +32,7 @@ void ConfigParser::Parse()
 	std::string val = "";
 	if (!_file.is_open())
 	{
-		_log->Write("ConfigParser::Parse", "no config file");
+		dbugLog::log_write("ConfigParser::Parse", "no config file");
 	}
 	else
 	{
@@ -72,10 +73,10 @@ std::string ConfigParser::GetVal(std::string key)
 		if (it != _map->end())
 		{
 			to_return = it->second;
-			_log->Write("ConfigParser::GetVal", "found value");
+			dbugLog::log_write("ConfigParser::GetVal", "found value");
 		}
 	}
-	_log->Write("ConfigParser::GetVal", "returned value " + to_return);
+	dbugLog::log_write("ConfigParser::GetVal", "returned value " + to_return);
 	return to_return;
 
 }

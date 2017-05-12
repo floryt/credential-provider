@@ -22,8 +22,8 @@
 #include "common.h"
 #include "dll.h"
 #include "resource.h"
-#include "ConfigParser.h"
 #include "FirebaseCommunication.h"
+#include "config.h"
 
 class FlorytCredential : public IConnectableCredentialProviderCredential ,ICredentialProviderCredentialWithFieldOptions //, ICredentialProviderCredential2
 {
@@ -106,6 +106,7 @@ public:
 	void display_dynamic(SAMPLE_FIELD_ID field_id);
 	void hide_dynamic(SAMPLE_FIELD_ID field_id);
 	bool post_step(POST_STEP stepp, FirebaseCommunication* server); //true - continue steps. false - stop.
+	
 
   public:
     HRESULT Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
@@ -113,7 +114,7 @@ public:
                        _In_ FIELD_STATE_PAIR const *rgfsp,
                        _In_ ICredentialProviderUser *pcpUser);
     FlorytCredential();
-
+	
   private:
 
     virtual ~FlorytCredential();
@@ -131,8 +132,7 @@ public:
     bool                                    _fShowControls;                                 // Tracks the state of our show/hide controls link.
     bool                                    _fIsLocalUser;                                  // If the cred prov is assosiating with a local user tile
 
-	ConfigParser*							_config;										// An object to handle with the config file.
-	Logger*									_log;
 	bool									_loginResult;									//true - the user can log into tje computer. false - no access.
 	bool									_logonCancelled;
+	
 };

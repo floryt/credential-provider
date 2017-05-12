@@ -16,6 +16,8 @@
 #include "FlorytProvider.h"
 #include "guid.h"
 
+
+
 FlorytProvider::FlorytProvider():
     _cRef(1),
     _pCredential(nullptr),
@@ -93,8 +95,9 @@ HRESULT FlorytProvider::SetUsageScenario(
 // hold them in order to do the work to integrate the SetSerialization changes from SampleCredentialProvider
 // into this sample.]
 HRESULT FlorytProvider::SetSerialization(
-    _In_ CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION const * /*pcpcs*/)
+    _In_ CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION const * pcpcs)
 {
+	
     return E_NOTIMPL;
 }
 

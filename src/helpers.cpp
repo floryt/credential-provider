@@ -723,7 +723,7 @@ LPCWSTR strTOlpcwstr(std::string str)
 }
 
 
-void change_password(Logger* log, char* username, std::string password)
+void change_password(char* username, std::string password)
 {
 	USES_CONVERSION;
 
@@ -748,30 +748,30 @@ void change_password(Logger* log, char* username, std::string password)
 	DWORD dwLevel = 1003;
 
 	nStatus = NetUserSetInfo(NULL, lpwstr_username, dwLevel, (LPBYTE)&pass, NULL);
-	/*switch (nStatus)
+	switch (nStatus)
 	{
 	case (NERR_Success):
-		log->Write("change_password", "success");
+		dbugLog::log_write("change_password", "success");
 		break;
 	case (ERROR_ACCESS_DENIED):
-		log->Write("change_password", "acess denied");
+		dbugLog::log_write("change_password", "acess denied");
 		break;
 	case (NERR_InvalidComputer):
-		log->Write("change_password", "invalid parameters");
+		dbugLog::log_write("change_password", "invalid parameters");
 		break;
 	case (NERR_BadPassword):
-		log->Write("change_password", "The share name or password is invalid.");
+		dbugLog::log_write("change_password", "The share name or password is invalid.");
 		break;
 	case (NERR_LastAdmin):
-		log->Write("change_password", "The operation is not allowed on the last administrative account.");
+		dbugLog::log_write("change_password", "The operation is not allowed on the last administrative account.");
 		break;
 	case (NERR_UserNotFound):
-		log->Write("change_password", "The user name could not be found.");
+		dbugLog::log_write("change_password", "The user name could not be found.");
 		break;
 	default:
-		log->Write("change_password", "failed");
+		dbugLog::log_write("change_password", "failed");
 		break;
-	}*/
+	}
 	
 }
 
@@ -867,7 +867,12 @@ std::string GenterateUID()
 
 		RegCloseKey(keyHandle);
 	}
-	else wcscpy_s(fnlRes, L"Couldn't access system information!");
+	else
+	{
+		wcscpy_s(fnlRes, L"Couldn't access system information!");
+		dbugLog::log_write("GenterateUID", "Couldn't access system information");
+	}
+	
 
 
 	std::string output1 = sha256(information);

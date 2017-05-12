@@ -5,10 +5,8 @@
 #include <string>
 #include "helpers.h"
 
-HTTPclient::HTTPclient(Logger* log, ConfigParser* config)
+HTTPclient::HTTPclient()
 {
-	_log = log;
-	_config = config;
 }
 
 //if returned nullpter - error
@@ -23,7 +21,7 @@ char* HTTPclient::GET(bool& isError, char* firebase_function)
 	isError = false;
 
 	//***********getting text from config*********
-	text = _config->GetVal("tryingToConnect");
+	text = config::get_val("tryingToConnect");
 	stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
 	config_result = stemp.c_str();
 	//********************************************
@@ -33,7 +31,7 @@ char* HTTPclient::GET(bool& isError, char* firebase_function)
 	//---------timeout:
 
 	//***********getting text from config*********
-	text = _config->GetVal("getTimeOut");
+	text = config::get_val("getTimeOut");
 	//********************************************
 
 	DWORD rec_timeout = 1000 * stoi(text);					
@@ -41,7 +39,7 @@ char* HTTPclient::GET(bool& isError, char* firebase_function)
 	//-------------------------
 
 	//***********getting text from config*********
-	text = _config->GetVal("firebasePath");
+	text = config::get_val("firebasePath");
 	stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
 	config_result = stemp.c_str();
 	//********************************************
@@ -74,12 +72,12 @@ char* HTTPclient::GET(bool& isError, char* firebase_function)
 		isError = true;
 		if (dwErr == 12002)
 		{
-			_log->Write("HTTPclient: GET", "[NO_CONNECTION] request timed out");
+			dbugLog::log_write("HTTPclient: GET", "[NO_CONNECTION] request timed out");
 			
 		}
 		else
 		{
-			_log->Write("HTTPclient: GET", "[NO_CONNECTION] error in http request");
+			dbugLog::log_write("HTTPclient: GET", "[NO_CONNECTION] error in http request");
 		}
 
 	}
@@ -116,7 +114,7 @@ char* HTTPclient::POST(char* json, bool& isError, char* firebase_function)
 
 
 	//***********getting text from config*********
-	text = _config->GetVal("tryingToConnect");
+	text = config::get_val("tryingToConnect");
 	stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
 	config_result = stemp.c_str();
 	//********************************************
@@ -126,7 +124,7 @@ char* HTTPclient::POST(char* json, bool& isError, char* firebase_function)
 	//---------timeout:
 
 	//***********getting text from config*********
-	text = _config->GetVal("postTimeOut");
+	text = config::get_val("postTimeOut");
 	//********************************************
 	DWORD rec_timeout = 1000 * stoi(text);
 	InternetSetOption(hIntSession, INTERNET_OPTION_RECEIVE_TIMEOUT, &rec_timeout, sizeof(rec_timeout));
@@ -135,7 +133,7 @@ char* HTTPclient::POST(char* json, bool& isError, char* firebase_function)
 
 
 	//***********getting text from config*********
-	text = _config->GetVal("firebasePath");
+	text = config::get_val("firebasePath");
 	stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
 	config_result = stemp.c_str();
 	//********************************************
@@ -158,7 +156,7 @@ char* HTTPclient::POST(char* json, bool& isError, char* firebase_function)
 	TCHAR* szHeaders = _T("Content-Type: application/json\r\n");
 	CHAR* szReq = json;// "{\"username\":\"Steven\",\"computerUID\":\"123456789\",\"guest\":false}";
 
-	_log->Write("HTTPclient: POST", std::string(json));
+	dbugLog::log_write("HTTPclient: POST", std::string(json));
 
 	CHAR szBuffer[1025];
 
@@ -170,12 +168,12 @@ char* HTTPclient::POST(char* json, bool& isError, char* firebase_function)
 		_itoa_s(dwErr, szBuffer,10);
 		if (dwErr == 12002)
 		{
-			_log->Write("HTTPclient: POST", "[NO_RESPONSE] request timed out");
+			dbugLog::log_write("HTTPclient: POST", "[NO_RESPONSE] request timed out");
 
 		}
 		else
 		{
-			_log->Write("HTTPclient: POST", "[NO_RESPONSE] error in http request");
+			dbugLog::log_write("HTTPclient: POST", "[NO_RESPONSE] error in http request");
 		}
 
 	}
