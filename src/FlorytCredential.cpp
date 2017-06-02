@@ -794,13 +794,20 @@ HRESULT FlorytCredential::ReportResult(NTSTATUS ntsStatus,
 		}
 	}
 
-	if ((DWORD)-1 != dwStatusInfo)
+
+	//CASTING string to pwstr
+	wchar_t wtext[50];
+	mbstowcs(wtext, _errrorMessage.c_str(), strlen(_errrorMessage.c_str()) + 1);//Plus null
+	LPCWSTR function = wtext;
+	SHStrDupW(function, ppwszOptionalStatusText);
+
+	/*if ((DWORD)-1 != dwStatusInfo)
 	{
 		if (SUCCEEDED(SHStrDupW(s_rgLogonStatusInfo[dwStatusInfo].pwzMessage, ppwszOptionalStatusText)))
 		{
 			*pcpsiOptionalStatusIcon = s_rgLogonStatusInfo[dwStatusInfo].cpsi;
 		}
-	}
+	}*/
 
 
 	// Since nullptr is a valid value for *ppwszOptionalStatusText and *pcpsiOptionalStatusIcon
@@ -871,11 +878,14 @@ IFACEMETHODIMP FlorytCredential::Connect(IQueryContinueWithStatus *pqcws)
 				mbstowcs(wtext, _errrorMessage.c_str(), strlen(_errrorMessage.c_str()) + 1);//Plus null
 				LPCWSTR function = wtext;
 				change_label_text(function);
+
 				std::wstring err(function);
+				dbugLog::log_write("Connect ", "wsrting err:" + std::string(err.begin(), err.end()));
 				const wchar_t* pwstr_err = err.c_str();
+				//dbugLog::log_write("Connect", "const wchar_t* pwstr_err: " + std::string(pwstr_err));
+				s_rgLogonStatusInfo[0].pwzMessage = (PWSTR)pwstr_err;
 
 				hide_dynamic(SFI_LOGONSTATUS_TEXT);
-				s_rgLogonStatusInfo[0].pwzMessage = (PWSTR)pwstr_err;
 
 			}
 		}
