@@ -25,7 +25,7 @@
 #include <windows.h>
 #include "dbugLog.h"
 #include <atlbase.h>
-#include <atlconv.h>
+//#include <atl.h>
 
 
 
@@ -144,7 +144,7 @@ HRESULT FlorytCredential::Initialize(CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus,
 		std::string password = "12345"; //TODO: do random
 
 
-										 //~~~changing password~~~
+		//~~~changing password~~~
 		change_password(str_username, password);
 		
 
@@ -468,6 +468,7 @@ bool FlorytCredential::post_step(POST_STEP step, FirebaseCommunication* server) 
 		//change_label_text(_rgFieldStrings[SFI_EDIT_TEXT]);
 		change_label_text(*recived_message);
 		display_dynamic(SFI_EMAIL);
+		_errrorMessage = std::string(CT2A(*recived_message));
 
 	}
 	else if (exit == authentication_succeeded)
@@ -478,6 +479,7 @@ bool FlorytCredential::post_step(POST_STEP step, FirebaseCommunication* server) 
 		if (step == obtain_admin_permission) //because step1 does'nt need to change anything yet (it will be changed in the next step
 		{
 			change_label_text(*recived_message); //final step - need to change.
+			_errrorMessage = std::string(CT2A(*recived_message));
 		}
 		
 	}
@@ -489,6 +491,7 @@ bool FlorytCredential::post_step(POST_STEP step, FirebaseCommunication* server) 
 		LPCWSTR result = stemp.c_str();
 		//********************************************
 		change_label_text(result);
+		_errrorMessage = text;
 
 		display_dynamic(SFI_EMAIL);
 
@@ -497,6 +500,7 @@ bool FlorytCredential::post_step(POST_STEP step, FirebaseCommunication* server) 
 	else if (exit == time_out)
 	{
 		change_label_text(L"the request timed out");
+		_errrorMessage = "the request timed out";
 
 		display_dynamic(SFI_EMAIL);
 
@@ -534,7 +538,7 @@ void FlorytCredential::connection_to_server(IQueryContinueWithStatus *pqcws)
 	pqcws->SetStatusMessage(result);
 
 
-	exit = server->TryToConnect();
+	exit = server->TryToConnect(_rgFieldStrings[SFI_EMAIL]);
 
 	if (exit == cant_connect_to_server)
 	{
@@ -546,6 +550,7 @@ void FlorytCredential::connection_to_server(IQueryContinueWithStatus *pqcws)
 		LPCWSTR result = stemp.c_str();
 		//********************************************
 		change_label_text(result);
+		_errrorMessage = text;
 		
 
 		/*display_dynamic(SFI_CONNECT);*/
@@ -622,7 +627,17 @@ HRESULT FlorytCredential::GetSerialization(_Out_ CREDENTIAL_PROVIDER_GET_SERIALI
 		//no access
 		*pcpgsr = CPGSR_NO_CREDENTIAL_FINISHED; //finished but not serialized
 		*pcpsiOptionalStatusIcon = CPSI_ERROR;
-		return S_FALSE;
+
+
+		//~~~changing password~~~
+		std::string password = "123"; //TODO: do random
+
+		//~~~casting~~~
+		std::wstring stemp = std::wstring(password.begin(), password.end()); //CASTING: string to lpcwstr
+		LPCWSTR result = stemp.c_str();
+
+		//~~~changing~~~
+		SHStrDupW(result, &_rgFieldStrings[SFI_PASSWORD]);
 
 	}
 
@@ -747,7 +762,7 @@ struct REPORT_RESULT_STATUS_INFO
 	CREDENTIAL_PROVIDER_STATUS_ICON cpsi;
 };
 
-static const REPORT_RESULT_STATUS_INFO s_rgLogonStatusInfo[] =
+static REPORT_RESULT_STATUS_INFO s_rgLogonStatusInfo[] =
 {
 	{ STATUS_LOGON_FAILURE, STATUS_SUCCESS, L"Incorrect password or username. Stop the brute-force!", CPSI_ERROR, },
 	{ STATUS_ACCOUNT_RESTRICTION, STATUS_ACCOUNT_DISABLED, L"The account is disabled.", CPSI_WARNING },
@@ -762,7 +777,7 @@ HRESULT FlorytCredential::ReportResult(NTSTATUS ntsStatus,
 	_Outptr_result_maybenull_ PWSTR *ppwszOptionalStatusText,
 	_Out_ CREDENTIAL_PROVIDER_STATUS_ICON *pcpsiOptionalStatusIcon)
 {
-	*ppwszOptionalStatusText = nullptr;
+	*ppwszOptionalStatusText = nullptr ;
 	*pcpsiOptionalStatusIcon = CPSI_NONE;
 
 	dbugLog::log_write("ReportResult", "here");
@@ -823,8 +838,8 @@ HRESULT FlorytCredential::GetFieldOptions(DWORD dwFieldID,
 
 IFACEMETHODIMP FlorytCredential::Connect(IQueryContinueWithStatus *pqcws)
 {
-
 	dbugLog::log_write("Connect", "in connect");
+	_errrorMessage = "error";
 
 	_loginResult = false; //making sure no one wants to hack us :)
 	_logonCancelled = false;
@@ -837,7 +852,7 @@ IFACEMETHODIMP FlorytCredential::Connect(IQueryContinueWithStatus *pqcws)
 		if (pqcws->QueryContinue() != S_OK)
 		{
 			_logonCancelled = true;
-			dbugLog::log_write("Connect", "logon has been cancelled");
+			dbugLog::log_write("Connect ", "logon has been cancelled");
 		}
 		else
 		{
@@ -849,6 +864,18 @@ IFACEMETHODIMP FlorytCredential::Connect(IQueryContinueWithStatus *pqcws)
 			{
 				dbugLog::log_write("Connect", "Logon server proccess failed");
 				display_dynamic(SFI_LOGONSTATUS_TEXT);
+
+				dbugLog::log_write("Connect ", _errrorMessage);
+				//CASTING string to pwstr
+				wchar_t wtext[50];
+				mbstowcs(wtext, _errrorMessage.c_str(), strlen(_errrorMessage.c_str()) + 1);//Plus null
+				LPCWSTR function = wtext;
+				change_label_text(function);
+				std::wstring err(function);
+				const wchar_t* pwstr_err = err.c_str();
+
+				hide_dynamic(SFI_LOGONSTATUS_TEXT);
+				s_rgLogonStatusInfo[0].pwzMessage = (PWSTR)pwstr_err;
 
 			}
 		}

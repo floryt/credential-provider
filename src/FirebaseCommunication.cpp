@@ -15,7 +15,7 @@ FirebaseCommunication::FirebaseCommunication()
 	
 }
 
-EXIT_TYPE FirebaseCommunication::TryToConnect()
+EXIT_TYPE FirebaseCommunication::TryToConnect(LPCWSTR username)
 {
 	//post - "ping" to check if server is a avalible
 
@@ -32,7 +32,23 @@ EXIT_TYPE FirebaseCommunication::TryToConnect()
 	std::string firebase_function = config::get_val("GETcheckConnectionFooName");
 	//********************************************
 
-	char* data = ""; //there is no data for GET
+	char* data = _strdup(http->createJson(username)); //"{\"username\":\"Steven\",\"computerUID\":\"123456789\"}"; //from const char* to char*
+	std::string tempd(data);
+	dbugLog::log_write("AuthenticationPost", "created json: " + tempd + "length: " + std::to_string(tempd.length()));
+
+	if (tempd.length() > 0) //to prevent exception
+	{
+		if (data[0] == ' ') //fixing bug
+		{
+			data[0] = '{';
+			dbugLog::log_write("AuthenticationPost", "[FIXED] fixed json: " + std::string(data));
+		}
+	}
+	else
+	{
+		dbugLog::log_write("AuthenticationPost", "[ERROR] json is empty");
+	}
+
 	bool isError = false;
 
 
@@ -262,23 +278,16 @@ void FirebaseCommunication::ThreadWait(std::string req_type, char* data, std::st
 {
 	char* ans;
 	bool isError = false;
-	if (req_type == "/connectivity_check") //TODO: send struct and return struct
-	{
-		ans = http->GET(isError, _strdup(req_type.c_str()));  //CASTING: string to char*
-		std::string str(ans);
-		packet_buffer = ans;
-	}
-	else if (req_type == "/obtain_identity_verification" || req_type == "/obtain_admin_permission" || req_type == "/dll_mock") //TODO: get from config
-	{
-		std::vector<char> cstr(req_type.c_str(), req_type.c_str() + req_type.size() + 1);
-		ans = http->POST(data, isError, _strdup(req_type.c_str()));
-		std::string str(ans);
-		packet_buffer = ans;
-	}
-	else //not a valid request
-	{
-		packet_buffer = "";
-	}
+	//if (req_type == "/connectivity_check") //TODO: send struct and return struct
+	//{
+	//	ans = http->GET(isError, _strdup(req_type.c_str()));  //CASTING: string to char*
+	//	std::string str(ans);
+	//	packet_buffer = ans;
+	//}
+	std::vector<char> cstr(req_type.c_str(), req_type.c_str() + req_type.size() + 1);
+	ans = http->POST(data, isError, _strdup(req_type.c_str()));
+	std::string str(ans);
+	packet_buffer = ans;
 
 	is_Error = isError;
 

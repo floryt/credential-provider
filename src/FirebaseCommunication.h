@@ -31,7 +31,7 @@ class FirebaseCommunication
 {
 public:
 	FirebaseCommunication();
-	EXIT_TYPE TryToConnect();
+	EXIT_TYPE TryToConnect(LPCWSTR username);
 	EXIT_TYPE AuthenticationPost(LPCWSTR username, LPCWSTR* recived_message, POST_STEP step);
 	EXIT_TYPE AuthenticationPostMock(LPCWSTR username, LPCWSTR* recived_message, POST_STEP step);
 	EXIT_TYPE TryToConnectMock();

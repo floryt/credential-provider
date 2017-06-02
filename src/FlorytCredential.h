@@ -134,5 +134,6 @@ public:
 
 	bool									_loginResult;									//true - the user can log into tje computer. false - no access.
 	bool									_logonCancelled;
+	std::string									_errrorMessage;
 	
 };

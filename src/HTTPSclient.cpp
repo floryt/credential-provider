@@ -205,7 +205,7 @@ const char* HTTPclient::createJson(LPCWSTR user_email)
 	std::string uid= "\"";
 	uid += GenterateUID();//"ii5tekf43attq9prnma2ik8s8c";
 	uid += "\"";
-	map_json.insert(std::pair<std::string, std::string>("\"computerUID\"",uid)); //TODO: add identifier
+	map_json.insert(std::pair<std::string, std::string>("\"computerUid\"",uid)); //TODO: add identifier
 	//map_json.insert(std::pair<std::string, std::string>("\"isGuest\"", is_guest ? "true" : "false"));
 
 	return jsonParser::CreateJson(map_json).c_str();
