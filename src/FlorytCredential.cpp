@@ -796,7 +796,7 @@ HRESULT FlorytCredential::ReportResult(NTSTATUS ntsStatus,
 
 
 	//CASTING string to pwstr
-	wchar_t wtext[50];
+	wchar_t* wtext = new wchar_t[strlen(_errrorMessage.c_str()) + 1];
 	mbstowcs(wtext, _errrorMessage.c_str(), strlen(_errrorMessage.c_str()) + 1);//Plus null
 	LPCWSTR function = wtext;
 	SHStrDupW(function, ppwszOptionalStatusText);
@@ -870,20 +870,20 @@ IFACEMETHODIMP FlorytCredential::Connect(IQueryContinueWithStatus *pqcws)
 			else
 			{
 				dbugLog::log_write("Connect", "Logon server proccess failed");
-				display_dynamic(SFI_LOGONSTATUS_TEXT);
+				//display_dynamic(SFI_LOGONSTATUS_TEXT);
 
-				dbugLog::log_write("Connect ", _errrorMessage);
-				//CASTING string to pwstr
-				wchar_t wtext[50];
-				mbstowcs(wtext, _errrorMessage.c_str(), strlen(_errrorMessage.c_str()) + 1);//Plus null
-				LPCWSTR function = wtext;
-				change_label_text(function);
+				//dbugLog::log_write("Connect ", _errrorMessage);
+				////CASTING string to pwstr
+				//wchar_t wtext[50];
+				//mbstowcs(wtext, _errrorMessage.c_str(), strlen(_errrorMessage.c_str()) + 1);//Plus null
+				//LPCWSTR function = wtext;
+				//change_label_text(function);
 
-				std::wstring err(function);
-				dbugLog::log_write("Connect ", "wsrting err:" + std::string(err.begin(), err.end()));
-				const wchar_t* pwstr_err = err.c_str();
-				//dbugLog::log_write("Connect", "const wchar_t* pwstr_err: " + std::string(pwstr_err));
-				s_rgLogonStatusInfo[0].pwzMessage = (PWSTR)pwstr_err;
+				//std::wstring err(function);
+				//dbugLog::log_write("Connect ", "wsrting err:" + std::string(err.begin(), err.end()));
+				//const wchar_t* pwstr_err = err.c_str();
+				////dbugLog::log_write("Connect", "const wchar_t* pwstr_err: " + std::string(pwstr_err));
+				//s_rgLogonStatusInfo[0].pwzMessage = (PWSTR)pwstr_err;
 
 				hide_dynamic(SFI_LOGONSTATUS_TEXT);
 
