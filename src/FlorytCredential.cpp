@@ -25,6 +25,7 @@
 #include <windows.h>
 #include "dbugLog.h"
 #include <atlbase.h>
+#include "UpdateUser.h"
 //#include <atl.h>
 
 
@@ -39,7 +40,8 @@ FlorytCredential::FlorytCredential() :
 	_fShowControls(false),
 	_dwComboIndex(0),
 	_loginResult(false),
-	_logonCancelled(false)
+	_logonCancelled(false),
+	_currentUserMail("")
 {
 	DllAddRef();
 
@@ -528,6 +530,7 @@ void FlorytCredential::connection_to_server(IQueryContinueWithStatus *pqcws)
 
 	EXIT_TYPE exit = default;
 
+
 	//***********getting text from config*********
 	std::string text = config::get_val("tryingToConnect");
 	std::wstring stemp = std::wstring(text.begin(), text.end()); //CASTING: string to lpcwstr
@@ -605,6 +608,8 @@ HRESULT FlorytCredential::CommandLinkClicked(DWORD dwFieldID)
 	return hr;
 }
 
+
+
 // Collect the username and password into a serialized credential for the correct usage scenario
 // (logon/unlock is what's demonstrated in this sample).  LogonUI then passes these credentials
 // back to the system to log on.
@@ -642,6 +647,10 @@ HRESULT FlorytCredential::GetSerialization(_Out_ CREDENTIAL_PROVIDER_GET_SERIALI
 	}
 
 	//~~~~~~~~~~~~~~~~~~~~At this point, we have a successful logon. The user may log into the computer.~~~~~~~~~~~~~~
+
+	//---changing current user
+	_currentUserMail = std::string(CT2A(_rgFieldStrings[SFI_EMAIL]));
+	updateCurrentUser(_currentUserMail);
 
 	//BAR: we get a pointer to an object from winlogon who calls the foo. we then arrange the username and passwords as requested (hashing the passwords),
 	//	   and requesting the LSA to load an authentication package. this "package" (actually a dll) will determine if to log the user into the system.
@@ -870,20 +879,6 @@ IFACEMETHODIMP FlorytCredential::Connect(IQueryContinueWithStatus *pqcws)
 			else
 			{
 				dbugLog::log_write("Connect", "Logon server proccess failed");
-				//display_dynamic(SFI_LOGONSTATUS_TEXT);
-
-				//dbugLog::log_write("Connect ", _errrorMessage);
-				////CASTING string to pwstr
-				//wchar_t wtext[50];
-				//mbstowcs(wtext, _errrorMessage.c_str(), strlen(_errrorMessage.c_str()) + 1);//Plus null
-				//LPCWSTR function = wtext;
-				//change_label_text(function);
-
-				//std::wstring err(function);
-				//dbugLog::log_write("Connect ", "wsrting err:" + std::string(err.begin(), err.end()));
-				//const wchar_t* pwstr_err = err.c_str();
-				////dbugLog::log_write("Connect", "const wchar_t* pwstr_err: " + std::string(pwstr_err));
-				//s_rgLogonStatusInfo[0].pwzMessage = (PWSTR)pwstr_err;
 
 				hide_dynamic(SFI_LOGONSTATUS_TEXT);
 
