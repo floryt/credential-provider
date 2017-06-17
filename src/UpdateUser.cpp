@@ -5,7 +5,7 @@
 void updateCurrentUser(std::string user_email)
 {
 
-	std::ofstream ofs("C:\\Users\\User\\Desktop\\current_user.txt", std::ofstream::in | std::ofstream::trunc);
+	std::ofstream ofs("C:\\Program Files\\Floryt\\current_user.txt", std::ofstream::in | std::ofstream::trunc);
 	if (ofs.is_open())
 	{
 		ofs << user_email;
