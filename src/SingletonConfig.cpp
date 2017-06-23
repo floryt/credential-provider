@@ -16,7 +16,7 @@ SingletonConfig* SingletonConfig::getInstance()
 
 SingletonConfig::SingletonConfig()
 {
-	_config = new ConfigParser("C:\\Users\\User\\Desktop\\config.txt");
+	_config = new ConfigParser("C:\\Program Files\\Floryt\\config.txt");
 	_config->Parse();
 }
 

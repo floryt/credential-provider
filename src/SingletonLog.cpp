@@ -16,7 +16,7 @@ SingletonLog* SingletonLog::getInstance()
 
 SingletonLog::SingletonLog()
 {
-	_logger = new Logger("C:\\Users\\User\\Desktop\\log.txt");
+	_logger = new Logger("C:\\Program Files\\Floryt\\log.txt");
 }
 
 SingletonLog::~SingletonLog()
